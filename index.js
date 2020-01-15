@@ -4,7 +4,7 @@ const uuidv1 = require('uuid/v1');
 let config = {
     upload: {
         url: "/data",
-        frequency: 2,
+        frequency: 50,
     }
 };
 
@@ -49,27 +49,31 @@ function getByteCount(s) {
     return count;
 }
 
-function uploadTrace(evts) {
-    const width = window.document.body.scrollWidth;
-    const height = window.document.body.scrollHeight;
-    const trace = {
-        idx: uploadIdx,
-        id: window.location.pathname, // path
-        uid: uuid,
-        width: width,
-        height: height,
+function newTrace() {
+    return {
+        id: uuid,
+        url: window.location.pathname,
+        width: document.body.scrollWidth,
+        height: document.body.scrollHeight,
         pageLoadTime: pageLoadTime,
         label: -1,
         guess: -1,
-        events: evts
-    };
-    
+        events: []
+    }
+}
+
+function uploadTrace(evts) {
+    let trace = newTrace();
+    let start = uploadIdx * config.upload.frequency;
+    let end = (uploadIdx + 1) * config.upload.frequency;
+    trace.events = eventsList.slice(start, end)
+
     let traceStr = JSON.stringify(trace);
 
     return fetch(config.upload.url, {
         method: 'POST',
         credentials: 'include',
-        body: JSON.stringify({key: "value"}),
+        body: traceStr,
     }).then(res => res.json());
 }
 
@@ -84,7 +88,8 @@ function mouseHandler(evt) {
         x = evt.changedTouches[0].pageX;
         y = evt.changedTouches[0].pageY;
     }
-    let t = {
+    let tmpEvt = {
+        id: eventsList.length, 
         timestamp: getRelativeTimestampInSeconds(),
         type: evt.type,
         x: x,
@@ -93,13 +98,13 @@ function mouseHandler(evt) {
     }
 
     if (evt.type == "wheel") {
-        t.deltaX = evt.deltaX;
-        t.deltaY = evt.deltaY;
+        tmpEvt.deltaX = evt.deltaX;
+        tmpEvt.deltaY = evt.deltaY;
     }
-    eventsList.push(t);
+    eventsList.push(tmpEvt);
     
     if ( eventsList.length % config.upload.frequency == 0 ) {
-        uploadTrace(eventsList.slice( uploadIdx*config.upload.frequency, (uploadIdx+1)*config.upload.frequency));
+        uploadTrace();
         uploadIdx += 1;
     }
 }
