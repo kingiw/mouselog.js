@@ -4,8 +4,13 @@ const uuidv1 = require('uuid/v1');
 let config = {
     upload: {
         url: "/data",
+        // Upload data once capture `frequency` events.
         frequency: 50,
-    }
+        // If config.upload.encoder is defined, data object will be encoded by `encoder` before uploading.
+        encoder: JSON.stringify, 
+        // If config.upload.decoder is defined, data will be decoded by `decoder` after receiving the response from the server
+        decoder: undefined
+    },
 };
 
 let targetEvents = [
@@ -52,7 +57,8 @@ function getByteCount(s) {
 function newTrace() {
     return {
         id: uuid,
-        url: window.location.pathname,
+        url: window.location.hostname ? window.location.hostname : "localhost",
+        path: window.location.pathname,
         width: document.body.scrollWidth,
         height: document.body.scrollHeight,
         pageLoadTime: pageLoadTime,
@@ -67,14 +73,23 @@ function uploadTrace(evts) {
     let start = uploadIdx * config.upload.frequency;
     let end = (uploadIdx + 1) * config.upload.frequency;
     trace.events = eventsList.slice(start, end)
+    let buffer;
 
-    let traceStr = JSON.stringify(trace);
+    if (config.upload.encoder) {
+        buffer = config.upload.encoder(trace);
+    } else {
+        buffer = trace;
+    }
 
     return fetch(config.upload.url, {
         method: 'POST',
         credentials: 'include',
-        body: traceStr,
-    }).then(res => res.json());
+        body: buffer,
+    }).then(res => {
+        if (config.upload.decoder)
+            res = config.upload.decoder(res);
+        //TODO
+    });
 }
 
 function mouseHandler(evt) {
