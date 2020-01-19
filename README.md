@@ -1,3 +1,7 @@
+[![NPM version](https://img.shields.io/npm/v/mouselog)](https://www.npmjs.com/package/mouselog)
+![Repo Size](https://img.shields.io/github/repo-size/microsoft/mouselog.js)
+
+
 # Configuration
 
 TODO
