@@ -1,4 +1,5 @@
 const uuidv1 = require('uuid/v1');
+const Uploader = require('./uploader');
 
 // default config
 let config = {
@@ -9,7 +10,7 @@ let config = {
         // If config.upload.encoder is defined, data object will be encoded by `encoder` before uploading.
         encoder: JSON.stringify, 
         // If config.upload.decoder is defined, data will be decoded by `decoder` after receiving the response from the server
-        decoder: undefined
+        decoder: x => x
     },
 };
 
@@ -26,10 +27,12 @@ let targetEvents = [
     "touchend"
 ];
 
+let uploader = new Uploader();
 let uuid;
 let eventsList;
 let pageLoadTime;
 let uploadIdx;
+let lastUploadTail = 0;
 
 function getRelativeTimestampInSeconds() {
     let diff = new Date() - pageLoadTime;
@@ -55,8 +58,9 @@ function getByteCount(s) {
 }
 
 function newTrace() {
-    return {
+    let trace = {
         id: uuid,
+        idx: uploadIdx,
         url: window.location.hostname ? window.location.hostname : "localhost",
         path: window.location.pathname,
         width: document.body.scrollWidth,
@@ -65,31 +69,16 @@ function newTrace() {
         label: -1,
         guess: -1,
         events: []
-    }
+    } 
+    uploadIdx += 1;
+    return trace;
 }
 
 function uploadTrace(evts) {
     let trace = newTrace();
-    let start = uploadIdx * config.upload.frequency;
-    let end = (uploadIdx + 1) * config.upload.frequency;
-    trace.events = eventsList.slice(start, end)
-    let buffer;
-
-    if (config.upload.encoder) {
-        buffer = config.upload.encoder(trace);
-    } else {
-        buffer = trace;
-    }
-
-    return fetch(config.upload.url, {
-        method: 'POST',
-        credentials: 'include',
-        body: buffer,
-    }).then(res => {
-        if (config.upload.decoder)
-            res = config.upload.decoder(res);
-        //TODO
-    });
+    trace.events = eventsList;
+    eventsList = [];
+    uploader.upload(trace);
 }
 
 function mouseHandler(evt) {
@@ -120,7 +109,6 @@ function mouseHandler(evt) {
     
     if ( eventsList.length % config.upload.frequency == 0 ) {
         uploadTrace();
-        uploadIdx += 1;
     }
 }
 
@@ -128,6 +116,13 @@ export function refresh() {
     eventsList = [];
     pageLoadTime = new Date();
     uploadIdx = 0;
+    uploader.start(
+        config.upload.url, 
+        {
+            encoder: config.upload.encoder,
+            decoder: config.upload.decoder
+        }
+    );
 }
 
 export function run(_config) {
@@ -145,5 +140,6 @@ export function run(_config) {
 export function stop() {
     targetEvents.forEach( s => {
         window.document.removeEventListener(s, (evt) => mouseHandler(evt));
-    })
+    });
+    uploader.stop();
 }
