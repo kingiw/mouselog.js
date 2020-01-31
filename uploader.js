@@ -1,11 +1,9 @@
-
 let StatusEnum = {
     FAILED: -1,
     WAITING: 0,
     SUCCESS: 1,
     SENDING: 2,
 }
-
 
 class Uploader {
     constructor() {
@@ -19,7 +17,6 @@ class Uploader {
         //     encoder: JSON.stringify,
         //     decoder: undefied
         // }
-        
         this.url = url;
 
         // Send and resend all the data in this.buf every `timeInterval` ms
@@ -67,8 +64,7 @@ class Uploader {
                     // TODO: Other process
                 })
             }
-        })
-       
+        });
     }   
 }
 

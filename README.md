@@ -6,6 +6,10 @@
 
 TODO
 
+# Schema
+
+![image](schema.jpg)
+
 
 # Contributing
 
