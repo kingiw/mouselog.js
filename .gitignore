@@ -108,3 +108,8 @@ dist
 .vscode/
 
 package-lock.json
+
+
+#release
+mouselog.js
+mouselog.min.js
