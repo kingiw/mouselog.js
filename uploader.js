@@ -7,22 +7,23 @@ let StatusEnum = {
 
 class Uploader {
     constructor() {
-        this.statusList = [];
         this.buf = [];
         this.enable = false;
     }
 
-    start(url, options) {
+    start(serverUrl, websiteId, impressionId, options) {
         // options = {
         //     timeInterval: 3000,
         //     encoder: JSON.stringify,
         //     decoder: undefied
         // }
-        this.url = url;
+        this.serverUrl = serverUrl;
+        this.websiteId = websiteId;
+        this.impressionId = impressionId;
 
         // Resend all the failed data in this.buf every `timeInterval` ms
         let timeInterval = options.timeInterval ? options.timeInterval : 3000;
-        this.interval = setInterval(()=>{
+        this.resendInterval = setInterval(()=>{
             this.resendFailedData.call(this);
         }, timeInterval);
         
@@ -33,42 +34,45 @@ class Uploader {
 
     stop() {
         this.enable = false;
-        clearInterval(this.interval);
+        clearInterval(this.resendInterval);
         // TODO?: Send all the remaining data in this.buf
     }
 
     upload(data) {
         if (!this.enable) return;
-        this.buf.push(data);
-        this.statusList.push(StatusEnum.WAITING);
-        this._uploadData(data);
+        this.buf.push({
+            status: StatusEnum.WAITING,
+            data: data
+        });
+        this._uploadData(this.buf[this.buf.length - 1]);
     }
 
     resendFailedData() {
         if (!this.enable) return;
-        this.buf.forEach( data => {
-            if (this.statusList[data.idx] == StatusEnum.FAILED) {
-                this._uploadData(data);
+        this.buf.forEach( obj => {
+            if (obj.status == StatusEnum.FAILED) {
+                this._uploadData(obj);
             }
-        });
+        })
     }
 
-    _uploadData(data) {
-        this.statusList[data.idx] = StatusEnum.SENDING;
-        let encodedData = this.encoder(data);
-        fetch(this.url, {
+    _uploadData(obj) {
+        obj.status = StatusEnum.SENDING;
+        let encodedData = this.encoder(obj.data);
+        console.log(`Here: ${this.serverUrl}`);
+        fetch(`${this.serverUrl}/api/upload-trace?websiteId=${this.websiteId}&impressionId=${this.impressionId}`, {
             method: "POST",
             credentials: "include",
             body: encodedData
         }).then(res => {
             if (res.status == 200) {
-                this.statusList[data.idx] = StatusEnum.SUCCESS;
+                obj.status = StatusEnum.SUCCESS;
             } else {
-                this.statusList[data.idx] = StatusEnum.FAILED;
+                obj.status = StatusEnum.FAILED;
                 // TODO: Other processing
             }
         }).catch(err => {
-            this.statusList[data.idx] = StatusEnum.FAILED;
+            obj.status = StatusEnum.FAILED;
             console.log(err);
             // TODO: Other processing
         })

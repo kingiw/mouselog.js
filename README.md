@@ -14,8 +14,6 @@ Then load and configure mouselog
 ```Javascript
 const mouselog = require('mouselog');
 let config = {
-    // Server url
-    url: "YOUR_SERVER_URL",
     // Upload the data object when every `frequency` events are captured.
     frequency: 50,
     // Data objects will be encoded by `encoder` before uploading to the server.
@@ -26,7 +24,7 @@ let config = {
 ```
 Run Mouselog and it will automatically collect all you want.
 ```Javascript
-mouselog.run(config);
+mouselog.run("YOUR_SERVER_URL", "YOUR_WEBSITE_NAME", config);
 ```
 
 You can also deactivate Mouselog by calling `mouselog.stop()`.

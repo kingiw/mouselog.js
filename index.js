@@ -1,12 +1,10 @@
-const uuidv1 = require('uuid/v1');
+const uuidv4 = require('uuid/v4');
 const Uploader = require('./uploader');
 
 // default config
 let config = {
-    // Server url
-    url: "https://localhost:9000",
     // Upload the website interaction data object when every `frequency` events are captured.
-    uploadFrequency: 50,
+    frequency: 50,
     // The website interaction data object will be encoded by `encoder` before uploading to the server.
     encoder: JSON.stringify,
     // The response data will be decoded by `decoder` 
@@ -27,11 +25,12 @@ let targetEvents = [
 ];
 
 let uploader = new Uploader();
-let uuid;
+let impressionId;
+let serverUrl;
+let websiteId;
 let eventsList;
 let pageLoadTime;
 let uploadIdx;
-let lastUploadTail = 0;
 
 function getRelativeTimestampInSeconds() {
     let diff = new Date() - pageLoadTime;
@@ -58,7 +57,7 @@ function getByteCount(s) {
 
 function newTrace() {
     let trace = {
-        id: uuid,
+        id: '0',
         idx: uploadIdx,
         url: window.location.hostname ? window.location.hostname : "localhost",
         path: window.location.pathname,
@@ -73,10 +72,12 @@ function newTrace() {
     return trace;
 }
 
-function uploadTrace(evts) {
+function uploadTrace(init=false) {
     let trace = newTrace();
-    trace.events = eventsList;
-    eventsList = [];
+    if (!init) {
+        trace.events = eventsList;
+        eventsList = [];
+    }
     uploader.upload(trace);
 }
 
@@ -116,24 +117,29 @@ export function refresh() {
     pageLoadTime = new Date();
     uploadIdx = 0;
     uploader.start(
-        config.url, 
-        {
-            encoder: config.encoder,
-            decoder: config.decoder
-        }
+        serverUrl,
+        websiteId,
+        impressionId,
+        { encoder: config.encoder, decoder: config.decoder }
     );
 }
 
-export function run(_config) {
-    if (_config) {
-        config = _config;
+export function run(_serverUrl, _websiteId, options) {
+    if (options) {
+        config = options;
     }
-    uuid = uuidv1();
+    
+    serverUrl = _serverUrl;
+    websiteId = _websiteId;
+    impressionId = uuidv4();
     refresh();
     
     targetEvents.forEach( s => {
         window.document.addEventListener(s, (evt) => mouseHandler(evt));
-    })
+    });
+
+    // Send an empty trace data when mouselog is activated
+    uploadTrace(true);
 }
 
 export function stop() {
