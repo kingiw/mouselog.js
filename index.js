@@ -3,15 +3,14 @@ const Uploader = require('./uploader');
 
 // default config
 let config = {
-    upload: {
-        url: "/data",
-        // Upload data once capture `frequency` events.
-        frequency: 50,
-        // If config.upload.encoder is defined, data object will be encoded by `encoder` before uploading.
-        encoder: JSON.stringify, 
-        // If config.upload.decoder is defined, data will be decoded by `decoder` after receiving the response from the server
-        decoder: x => x
-    },
+    // Server url
+    url: "https://localhost:9000",
+    // Upload the website interaction data object when every `frequency` events are captured.
+    uploadFrequency: 50,
+    // The website interaction data object will be encoded by `encoder` before uploading to the server.
+    encoder: JSON.stringify,
+    // The response data will be decoded by `decoder` 
+    decoder: x => x
 };
 
 let targetEvents = [
@@ -107,7 +106,7 @@ function mouseHandler(evt) {
     }
     eventsList.push(tmpEvt);
     
-    if ( eventsList.length % config.upload.frequency == 0 ) {
+    if ( eventsList.length % config.frequency == 0 ) {
         uploadTrace();
     }
 }
@@ -117,10 +116,10 @@ export function refresh() {
     pageLoadTime = new Date();
     uploadIdx = 0;
     uploader.start(
-        config.upload.url, 
+        config.url, 
         {
-            encoder: config.upload.encoder,
-            decoder: config.upload.decoder
+            encoder: config.encoder,
+            decoder: config.decoder
         }
     );
 }
