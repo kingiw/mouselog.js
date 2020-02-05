@@ -2,9 +2,37 @@
 ![Repo Size](https://img.shields.io/github/repo-size/microsoft/mouselog.js)
 
 
-# Configuration
+# Usage
 
-TODO
+## NPM
+Install Mouselog.js via
+```
+npm i mouselog --save
+```
+
+Then load and configure mouselog
+```Javascript
+const mouselog = require('mouselog');
+let config = {
+    // Server url
+    url: "YOUR_SERVER_URL",
+    // Upload the data object when every `frequency` events are captured.
+    frequency: 50,
+    // Data objects will be encoded by `encoder` before uploading to the server.
+    encoder: JSON.stringify,
+    // The response data will be decoded by `decoder` 
+    decoder: x => x
+}
+```
+Run Mouselog and it will automatically collect all you want.
+```Javascript
+mouselog.run(config);
+```
+
+You can also deactivate Mouselog by calling `mouselog.stop()`.
+
+# Demo
+[Mouselog-demo](https://github.com/hsluoyz/mouselog-demo)
 
 # Schema
 
