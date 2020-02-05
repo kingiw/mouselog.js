@@ -2,7 +2,10 @@
 ![Repo Size](https://img.shields.io/github/repo-size/microsoft/mouselog.js)
 
 
-# Usage
+Mouselog.js
+====
+
+Mouselog.js is the client-side agent for Microsoft's [Mouselog](https://github.com/microsoft/mouselog), a user behavior monitoring platform for websites.
 
 ## NPM
 Install Mouselog.js via
@@ -24,7 +27,7 @@ let config = {
 ```
 Run Mouselog and it will automatically collect all you want.
 ```Javascript
-mouselog.run("YOUR_SERVER_URL", "YOUR_WEBSITE_NAME", config);
+mouselog.run("YOUR_SERVER_URL", "YOUR_WEBSITE_ID", config);
 ```
 
 You can also deactivate Mouselog by calling `mouselog.stop()`.
