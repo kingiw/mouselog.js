@@ -23,7 +23,7 @@ class Uploader {
         // Resend all the failed data in this.buf every `timeInterval` ms
         let timeInterval = options.timeInterval ? options.timeInterval : 3000;
         this.interval = setInterval(()=>{
-            this._uploadData.call(this);
+            this.resendFailedData.call(this);
         }, timeInterval);
         
         this.encoder = options.encoder ? options.encoder : JSON.stringify;
