@@ -44,7 +44,11 @@ let config = {
     // Data objects will be encoded by `encoder` before uploading to the server.
     encoder: JSON.stringify,
     // The response data will be decoded by `decoder` 
-    decoder: x => x
+    decoder: x => x, 
+    // Use GET method to upload data? (stringified data will be embedded in URI) default: false
+    enableGET: false, 
+    // Time interval for resending the failed trace data, default: 3000
+    resendInterval: 3000
 }
 ```
 Run Mouselog and it will automatically collect all you want.
