@@ -7,13 +7,26 @@ Mouselog.js
 
 Mouselog.js is the client-side agent for Microsoft's [Mouselog](https://github.com/microsoft/mouselog), a user behavior monitoring platform for websites.
 
-## Embed JS
+## Embedded JS
 Embed Mouselog in your HTML files:
 ```html
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mouselog@0.0.5-beta2/mouselog.js"></script>
 <script>
-    mouselog.run("Your_Server_Url", "Your_Website_Name");
+    mouselog.run("Your_Server_Url", "Your_Website_Id");
 </script>
+```
+You can also refer mouselog dynamically in Javascript:
+```Javascript
+(function() {
+    var script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/mouselog@0.0.5-beta2/mouselog.js";
+    script.onload = () => {
+        mouselog.run("Your_Server_Url", "Your_Website_Id");
+    }
+    var t = document.getElementsByTagName("script");
+    var s = t.length > 0 ? t[0].parentNode : document.body;
+    s.appendChild(script, s);
+})();
 ```
 
 ## NPM
