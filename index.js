@@ -8,7 +8,11 @@ let config = {
     // The website interaction data object will be encoded by `encoder` before uploading to the server.
     encoder: JSON.stringify,
     // The response data will be decoded by `decoder` 
-    decoder: x => x
+    decoder: x => x, 
+    // Use GET method to upload data? (stringified data will be embedded in URI)
+    enableGET: false, 
+    // Time interval for resending the failed trace data
+    resendInterval: 3000
 };
 
 let targetEvents = [
@@ -120,7 +124,7 @@ export function refresh() {
         serverUrl,
         websiteId,
         impressionId,
-        { encoder: config.encoder, decoder: config.decoder }
+        config
     );
 }
 

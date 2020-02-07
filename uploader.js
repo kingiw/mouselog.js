@@ -12,21 +12,17 @@ class Uploader {
     }
 
     start(serverUrl, websiteId, impressionId, options) {
-        // options = {
-        //     timeInterval: 3000,
-        //     encoder: JSON.stringify,
-        //     decoder: undefied
-        // }
         this.serverUrl = serverUrl;
         this.websiteId = websiteId;
         this.impressionId = impressionId;
 
-        // Resend all the failed data in this.buf every `timeInterval` ms
-        let timeInterval = options.timeInterval ? options.timeInterval : 3000;
+        // Resend all the failed data in this.buf every `resendInterval` ms
+        let resendInterval = options.resendInterval ? options.resendInterval : 3000;
         this.resendInterval = setInterval(()=>{
             this.resendFailedData.call(this);
-        }, timeInterval);
+        }, resendInterval);
         
+        this.enableGET = options.enableGET ? options.enableGET : false;
         this.encoder = options.encoder ? options.encoder : JSON.stringify;
         this.decoder = options.decoder ? options.decoder : x=>x;
         this.enable = true;
@@ -56,15 +52,30 @@ class Uploader {
         })
     }
 
+    _getUploadPromise(encodedData) {
+        if (this.enableGET) {
+            return new Promise((resolve, reject) => {
+                fetch(`${this.serverUrl}/api/upload-trace?websiteId=${this.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
+                    method: "GET", 
+                    credentials: "include"
+                })
+            });
+        } else {
+            return new Promise((resolve, reject) => {
+                fetch(`${this.serverUrl}/api/upload-trace?websiteId=${this.websiteId}&impressionId=${this.impressionId}`, {
+                    method: "POST",
+                    credentials: "include",
+                    body: encodedData
+                })
+            });
+        }
+    }
+    
     _uploadData(obj) {
         obj.status = StatusEnum.SENDING;
         let encodedData = this.encoder(obj.data);
-        console.log(`Here: ${this.serverUrl}`);
-        fetch(`${this.serverUrl}/api/upload-trace?websiteId=${this.websiteId}&impressionId=${this.impressionId}`, {
-            method: "POST",
-            credentials: "include",
-            body: encodedData
-        }).then(res => {
+        this._getUploadPromise(encodedData)
+        .then(res => {
             if (res.status == 200) {
                 obj.status = StatusEnum.SUCCESS;
             } else {
