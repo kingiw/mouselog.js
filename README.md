@@ -10,7 +10,7 @@ Mouselog.js is the client-side agent for Microsoft's [Mouselog](https://github.c
 ## Embedded JS
 Embed Mouselog in your HTML files:
 ```html
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mouselog@0.0.7/mouselog.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mouselog@0.0.7-beta1/mouselog.js"></script>
 <script>
     mouselog.run("Your_Server_Url", "Your_Website_Id");
 </script>
@@ -19,7 +19,7 @@ You can also refer mouselog dynamically in Javascript:
 ```Javascript
 (function() {
     var script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/mouselog@0.0.7/mouselog.js";
+    script.src = "https://cdn.jsdelivr.net/npm/mouselog@0.0.7-beta1/mouselog.js";
     script.onload = () => {
         mouselog.run("Your_Server_Url", "Your_Website_Id");
     }
