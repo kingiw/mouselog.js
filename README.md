@@ -10,7 +10,7 @@ Mouselog.js is the client-side agent for Microsoft's [Mouselog](https://github.c
 ## Embedded JS
 Embed Mouselog in your HTML files:
 ```html
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mouselog@0.0.5-beta2/mouselog.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mouselog@0.0.7/mouselog.js"></script>
 <script>
     mouselog.run("Your_Server_Url", "Your_Website_Id");
 </script>
@@ -19,7 +19,7 @@ You can also refer mouselog dynamically in Javascript:
 ```Javascript
 (function() {
     var script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/mouselog@0.0.5-beta2/mouselog.js";
+    script.src = "https://cdn.jsdelivr.net/npm/mouselog@0.0.7/mouselog.js";
     script.onload = () => {
         mouselog.run("Your_Server_Url", "Your_Website_Id");
     }
@@ -39,17 +39,26 @@ Then load and configure mouselog
 ```Javascript
 const mouselog = require('mouselog');
 let config = {
-    // Upload the data object when every `frequency` events are captured.
+    // Set upload mode: "periodic" or "event-triggered"
+    uploadMode: "periodic",
+
+    // If `uploadMode` == "periodic", data will be uploaded every `uploadPeriod` ms.
+    // If no data are collected in a period, no data will be uploaded
+    uploadPeriod: 5000,
+
+    // If `uploadMode` == "event-triggered"
+    // The website interaction data will be uploaded when every `frequency` events are captured.
     frequency: 50,
-    // Data objects will be encoded by `encoder` before uploading to the server.
+
+    // The website interaction data will be encoded by `encoder` before uploading to the server.
     encoder: JSON.stringify,
     // The response data will be decoded by `decoder` 
     decoder: x => x, 
-    // Use GET method to upload data? (stringified data will be embedded in URI) default: false
+    // Use GET method to upload data? (stringified data will be embedded in URI)
     enableGET: false, 
-    // Time interval for resending the failed trace data, default: 3000
+    // Time interval for resending the failed trace data
     resendInterval: 3000
-}
+};
 ```
 Run Mouselog and it will automatically collect all you want.
 ```Javascript
