@@ -45,6 +45,7 @@ let eventsList;
 let pageLoadTime;
 let uploadIdx;
 let uploadInterval;
+let enable = false;
 
 function getRelativeTimestampInSeconds() {
     let diff = new Date() - pageLoadTime;
@@ -162,6 +163,13 @@ export function run(_serverUrl, _websiteId, options) {
                 uploadTrace();
             }
         }, config.uploadPeriod);
+    }
+
+    // clean up before unloading the window
+    onbeforeunload = (evt) => {
+        if (eventsList.length != 0) {
+            uploadTrace();
+        }
     }
 }
 
