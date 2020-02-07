@@ -3,9 +3,18 @@ const Uploader = require('./uploader');
 
 // default config
 let config = {
-    // Upload the website interaction data object when every `frequency` events are captured.
+    // Set upload mode: "periodic" or "event-triggered"
+    uploadMode: "periodic",
+
+    // If `uploadMode` == "periodic", data will be uploaded every `uploadPeriod` ms.
+    // If no data are collected in a period, no data will be uploaded
+    uploadPeriod: 5000,
+
+    // If `uploadMode` == "event-triggered"
+    // The website interaction data will be uploaded when every `frequency` events are captured.
     frequency: 50,
-    // The website interaction data object will be encoded by `encoder` before uploading to the server.
+
+    // The website interaction data will be encoded by `encoder` before uploading to the server.
     encoder: JSON.stringify,
     // The response data will be decoded by `decoder` 
     decoder: x => x, 
@@ -35,6 +44,8 @@ let websiteId;
 let eventsList;
 let pageLoadTime;
 let uploadIdx;
+let uploadInterval;
+let enable = false;
 
 function getRelativeTimestampInSeconds() {
     let diff = new Date() - pageLoadTime;
@@ -111,7 +122,7 @@ function mouseHandler(evt) {
     }
     eventsList.push(tmpEvt);
     
-    if ( eventsList.length % config.frequency == 0 ) {
+    if ( config.uploadMode == "event-triggered" && eventsList.length % config.frequency == 0 ) {
         uploadTrace();
     }
 }
@@ -144,11 +155,28 @@ export function run(_serverUrl, _websiteId, options) {
 
     // Send an empty trace data when mouselog is activated
     uploadTrace(true);
+
+    if (config.uploadMode === "periodic") {
+        uploadInterval = setInterval(() => {
+            console.log("here");
+            if (eventsList.length != 0) {
+                uploadTrace();
+            }
+        }, config.uploadPeriod);
+    }
+
+    // clean up before unloading the window
+    onbeforeunload = (evt) => {
+        if (eventsList.length != 0) {
+            uploadTrace();
+        }
+    }
 }
 
 export function stop() {
     targetEvents.forEach( s => {
         window.document.removeEventListener(s, (evt) => mouseHandler(evt));
     });
+    clearInterval(uploadInterval);
     uploader.stop();
 }
