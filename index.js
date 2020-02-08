@@ -1,28 +1,7 @@
 const uuidv4 = require('uuid/v4');
 const Uploader = require('./uploader');
+let { config, buildConfig } = require('./config');
 
-// default config
-let config = {
-    // Set upload mode: "periodic" or "event-triggered"
-    uploadMode: "periodic",
-
-    // If `uploadMode` == "periodic", data will be uploaded every `uploadPeriod` ms.
-    // If no data are collected in a period, no data will be uploaded
-    uploadPeriod: 5000,
-
-    // If `uploadMode` == "event-triggered"
-    // The website interaction data will be uploaded when every `frequency` events are captured.
-    frequency: 50,
-
-    // The website interaction data will be encoded by `encoder` before uploading to the server.
-    encoder: JSON.stringify,
-    // The response data will be decoded by `decoder` 
-    decoder: x => x, 
-    // Use GET method to upload data? (stringified data will be embedded in URI)
-    enableGET: false, 
-    // Time interval for resending the failed trace data
-    resendInterval: 3000
-};
 
 let targetEvents = [
     "mousemove",
@@ -131,21 +110,12 @@ export function refresh() {
     eventsList = [];
     pageLoadTime = new Date();
     uploadIdx = 0;
-    uploader.start(
-        serverUrl,
-        websiteId,
-        impressionId,
-        config
-    );
+    uploader.start(impressionId);
 }
 
-export function run(_serverUrl, _websiteId, options) {
-    if (options) {
-        config = options;
-    }
-    
-    serverUrl = _serverUrl;
-    websiteId = _websiteId;
+export function run(params) {
+    buildConfig(params);
+
     impressionId = uuidv4();
     refresh();
     
@@ -158,7 +128,6 @@ export function run(_serverUrl, _websiteId, options) {
 
     if (config.uploadMode === "periodic") {
         uploadInterval = setInterval(() => {
-            console.log("here");
             if (eventsList.length != 0) {
                 uploadTrace();
             }
