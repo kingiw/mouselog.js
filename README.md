@@ -70,6 +70,10 @@ The default configuration:
     // Endpoint type, "absolute" or "relative"
     endpointType: "absolute",
 
+    // upload protocol, "https" or "http"
+    // If you declare it in `uploadEndpoint`, this property will be ignored. 
+    uploadProtocol: "https",
+
     // Upload mode, "periodic" or "event-triggered"
     uploadMode: "periodic",
 

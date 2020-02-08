@@ -1,5 +1,6 @@
+// Default config
 let config = {
-    // Type: string
+    // Type: string, REQUIRED
     // Endpoint Url
     uploadEndpoint: "http://localhost:9000",
 
@@ -9,6 +10,10 @@ let config = {
 
     // Endpoint type, "absolute" or "relative"
     endpointType: "absolute",
+
+    // upload protocol, "https" or "http"
+    // If you declare it in `uploadEndpoint`, this property will be ignored. 
+    uploadProtocol: "https",
 
     // Upload mode, "periodic" or "event-triggered"
     uploadMode: "periodic",
@@ -40,7 +45,9 @@ let config = {
     resendInterval: 3000, 
 }
 
-requiredParams = [
+// ----------------------------
+
+let requiredParams = [
     "uploadEndpoint",
 ];
 
@@ -53,10 +60,32 @@ let buildConfig = (params) => {
     Object.keys(params).forEach(key => {
         config[key] = params[key];
     });
+    config.absoluteUrl = formatUrl();
 }
 
-config.formatUrl = () => {
-    // TODO
+let formatUrl = () => {
+    let url = config.uploadEndpoint
+    if (config.endpointType == "relative") {
+        // Format the head -> "/*"
+        if (url.startsWith("./")) {
+            url = url.slice(1);
+        } else if (url[0] !== "/") {
+            url = `/${url}`;
+        }
+        // Format the tail
+        if (url[url.length-1] === "/") {
+            url = url.slice(0, url.length-1);
+        }
+        // Construct absolute URL
+        url = `${config.uploadProtocol}://${window.location.hostname}${url}`;
+    } else if (config.endpointType == "absolute") {
+        if (!(url.startsWith("http://") || url.startsWith("https://"))) {
+            url = `${config.uploadProtocol}://${url}`;
+        }
+    } else {
+        throw new Error('`endpointType` can only be "absolute" or "relative"');
+    }
+    return url;
 }
 
 module.exports = { config, buildConfig }

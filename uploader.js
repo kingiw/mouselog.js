@@ -50,14 +50,14 @@ class Uploader {
     _getUploadPromise(encodedData) {
         if (config.enableGet) {
             return new Promise((resolve, reject) => {
-                fetch(`${config.uploadEndpoint}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
+                fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
                     method: "GET", 
                     credentials: "include"
                 })
             });
         } else {
             return new Promise((resolve, reject) => {
-                fetch(`${config.uploadEndpoint}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}`, {
+                fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}`, {
                     method: "POST",
                     credentials: "include",
                     body: encodedData
