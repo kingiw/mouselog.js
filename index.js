@@ -55,13 +55,11 @@ function newTrace() {
     return trace;
 }
 
-function uploadTrace(init=false) {
+function uploadTrace() {
     let trace = newTrace();
-    if (!init) {
-        trace.events = eventsList;
-        eventsList = [];
-    }
-    uploader.upload(trace);
+    trace.events = eventsList;
+    eventsList = [];
+    return uploader.upload(trace); // This is a promise
 }
 
 function mouseHandler(evt) {
@@ -108,21 +106,23 @@ function init(params) {
     impressionId = uuidv4();
 
     if (buildConfig(params)) {
-        // Fetch config when mouselog is activated
-        // The backend server may return a new config and overwrite the agent's config
-        uploadTrace(true);
-    
-        // clean up the buffer before unloading the window
-        onbeforeunload = (evt) => {
-            if (eventsList.length != 0) {
-                uploadTrace();
+        // Upload an empty data to fetch config from backend
+        uploadTrace().then( result => {
+            if (result) {
+                // clean up the buffer before unloading the window
+                onbeforeunload = (evt) => {
+                    if (eventsList.length != 0) {
+                        uploadTrace();
+                    }
+                }
+                return true;
+            } else {
+                return false;
             }
-        }
-        return true;
+        });
     } else {
         return false;
     }
-
 }
 
 function runCollector() {

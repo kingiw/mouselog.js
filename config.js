@@ -65,7 +65,7 @@ let buildConfig = (params) => {
         configHash = Utils.getObjectHash(config);
         config.absoluteUrl = formatUrl();
     } catch(err) {
-        console.log(err.message);
+        console.log(err);
         return false;
     }
     return true;
