@@ -15,7 +15,17 @@ function getObjectHash(obj) {
     return stringHash(s);
 }
 
+function str2Func(s) {
+    try {
+        return eval(s);
+    } catch(err) {
+        console.log(err.message);
+        return undefined;
+    }
+}
+
 module.exports = {
     sortObjectByKey,
-    getObjectHash
+    getObjectHash,
+    str2Func
 }

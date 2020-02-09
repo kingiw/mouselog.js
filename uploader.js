@@ -1,52 +1,78 @@
 let {config, updateConfig} = require('./config');
 
 let StatusEnum = {
-    FAILED: -1,
     WAITING: 0,
-    SUCCESS: 1,
-    SENDING: 2,
+    SENDING: 1,
+    SUCCESS: 2,
 }
 
 class Uploader {
     constructor() {
-        this.buf = [];
-        this.enable = false;
+        this.resendQueue = [];
     }
 
     start(impressionId) {
         this.impressionId = impressionId;
         this.resendInterval = setInterval(()=>{
-            this.resendFailedData.call(this);
+            this._resendFailedData.call(this);
         }, config.resendInterval);
-        
-        this.enable = true;
     }
 
     stop() {
-        this.enable = false;
         clearInterval(this.resendInterval);
         // TODO?: Send all the remaining data in this.buf
     }
 
     upload(data) {
-        if (!this.enable) return;
-        this.buf.push({
-            status: StatusEnum.WAITING,
-            data: data
+        return new Promise( (resolve) => {
+            let encodedData = config.encoder(data.data);
+            this._upload(encodedData).then(res => {
+                if (res.status == 200) {
+                    res.json().then( resObj => {
+                        if (resObj.status !== "ok") {
+                            throw new Error("Response object status is not ok.");
+                        }
+                        if (resObj.msg == "config") {
+                            let params = resObj.data;
+                            params.encoder = Utils.str2Func(params.encoder);
+                            params.decoder = Utils.str2Func(params.decoder);
+                            updateConfig(params);
+                        }
+                        resolve(true);
+                    });
+                } else {
+                    throw new Error("Response status code is not 200.");
+                }
+            }).catch(err => {
+                console.log(err);
+                _appendFailedData(data);
+                resolve(false);
+            })
         });
-        this._uploadData(this.buf[this.buf.length - 1]);
     }
 
-    resendFailedData() {
-        if (!this.enable) return;
-        this.buf.forEach( obj => {
-            if (obj.status == StatusEnum.FAILED) {
-                this._uploadData(obj);
+    _resendFailedData() {
+        let i = 0;
+        while (i < this.resendQueue.length) {
+            if (obj.status == StatusEnum.SUCCESS) {
+                this.resendQueue.splice(i, 1);  // Remove it from resendQueue
+            } else {
+                i += 1;
+                if (obj.status == StatusEnum.WAITING) {
+                    obj.status = StatusEnum.SENDING;
+                    this.upload(obj.data).then( result => {
+                        if (result) { // Successfully resend the data
+                            obj.status = StatusEnum.SUCCESS;
+                        } else {
+                            obj.status = StatusEnum.WAITING;
+                        }
+                    });
+                }
             }
-        })
+        }
     }
 
-    _getUploadPromise(encodedData) {
+    _upload(encodedData) {
         if (config.enableGet) {
             return fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
                 method: "GET", 
@@ -60,42 +86,14 @@ class Uploader {
             });
         }
     }
-    
-    _uploadData(dataBlock) {
-        dataBlock.status = StatusEnum.SENDING;
-        let encodedData = config.encoder(dataBlock.data);
-        this._getUploadPromise(encodedData)
-        .then(res => {
-            if (res.status == 200) {
-                res.json().then( resObj => {
-                    if (resObj.status != "ok") {
-                        throw new Error("Response object status is not ok.");
-                    }
-                    if (resObj.msg == "config") {
-                        let params = resObj.data
-                        try {
-                            params.encoder = eval(params.encoder);
-                        } catch(err) {
-                            console.log("Invalid `config.encoder` from backend server.");
-                            delete params.encoder;
-                        }
-                        try {
-                            params.decoder = eval(params.decoder);
-                        } catch(err) {
-                            console.log("Invalid `config.decoder` from backend server.");
-                            delete params.decoder;
-                        }
-                        updateConfig(params);
-                    }
-                });
-            } else {
-                throw new Error("Response status code is not 200.");
-            }
-        }).catch(err => {
-            dataBlock.status = StatusEnum.FAILED;
-            console.log(err);
-        })
+
+    _appendFailedData(data) {
+        this.resendQueue.push({
+            status: StatusEnum.WAITING,
+            data: data
+        });
     }
+    
 }
 
 module.exports = Uploader;
