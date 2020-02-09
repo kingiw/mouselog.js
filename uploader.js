@@ -15,7 +15,6 @@ class Uploader {
 
     start(impressionId) {
         this.impressionId = impressionId;
-
         this.resendInterval = setInterval(()=>{
             this.resendFailedData.call(this);
         }, config.resendInterval);
@@ -53,7 +52,7 @@ class Uploader {
                 fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
                     method: "GET", 
                     credentials: "include"
-                })
+                });
             });
         } else {
             return new Promise((resolve, reject) => {
@@ -71,6 +70,7 @@ class Uploader {
         let encodedData = config.encoder(obj.data);
         this._getUploadPromise(encodedData)
         .then(res => {
+            console.log("HERE ", res);
             if (res.status == 200) {
                 obj.status = StatusEnum.SUCCESS;
                 if (obj.data) {

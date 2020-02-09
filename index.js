@@ -96,7 +96,7 @@ function mouseHandler(evt) {
 }
 
 function clearBuffer() {
-    eventList = [];
+    eventsList = [];
 }
 
 // Initialize the mouselog
@@ -107,18 +107,22 @@ function init(params) {
     uploader = new Uploader();
     impressionId = uuidv4();
 
-    buildConfig(params);
-
-    // Fetch config when mouselog is activated
-    // The backend server may return a new config and overwrite the agent's config
-    uploadTrace(true);
-
-    // clean up the buffer before unloading the window
-    onbeforeunload = (evt) => {
-        if (eventsList.length != 0) {
-            uploadTrace();
+    if (buildConfig(params)) {
+        // Fetch config when mouselog is activated
+        // The backend server may return a new config and overwrite the agent's config
+        uploadTrace(true);
+    
+        // clean up the buffer before unloading the window
+        onbeforeunload = (evt) => {
+            if (eventsList.length != 0) {
+                uploadTrace();
+            }
         }
+        return true;
+    } else {
+        return false;
     }
+
 }
 
 function runCollector() {
@@ -145,15 +149,16 @@ function stopCollector() {
 function onConfigChange() {
     stopCollector();
     uploader.stop();
-    uploader.start();
+    uploader.start(impressionId);
     runCollector();
 }
 window.addEventListener("configChange", onConfigChange);
 
 export function run(params) {
-    init();
-    runCollector();
-    uploader.start();
+    if (init(params)) {
+        runCollector();
+        uploader.start(impressionId);
+    }
 }
 
 export function stop() {

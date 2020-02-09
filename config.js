@@ -55,14 +55,21 @@ let requiredParams = [
 let configHash;
 
 let buildConfig = (params) => {
-    requiredParams.forEach(key => {
-        if (!(key in params)) {
-            throw new Error(`Param ${key} is required but not declared.`);
-        }
-    });
-    config = Object.assign(config, params);
-    config.absoluteUrl = formatUrl();
-    configHash = Utils.getObjectHash(ordered);
+    try {
+        requiredParams.forEach(key => {
+            console.log(params);
+            if (!(params.hasOwnProperty(key))) {
+                throw new Error(`Param ${key} is required but not declared.`);
+            }
+        });
+        config = Object.assign(config, params);
+        configHash = Utils.getObjectHash(config);
+        config.absoluteUrl = formatUrl();
+    } catch(err) {
+        console.log(err.message);
+        return false;
+    }
+    return true;
 }
 
 let updateConfig = (params) => {
@@ -71,13 +78,13 @@ let updateConfig = (params) => {
     if (hash == configHash) {
         return;
     }
-
     // Generate new config
-    buildConfig(params);
-    
-    // Fire an event when config is updated.
-    let configChangeEvt = new Event("configChange");
-    window.dispatchEvent(configChangeEvt);
+    if (buildConfig(params)) {
+        // If success, fire an event when config is updated.
+        let configChangeEvt = new Event("configChange");
+        window.dispatchEvent(configChangeEvt);
+    }
+
 }
 
 let formatUrl = () => {
@@ -97,6 +104,7 @@ let formatUrl = () => {
         url = `${config.uploadProtocol}://${window.location.hostname}${url}`;
     } else if (config.endpointType == "absolute") {
         if (!(url.startsWith("http://") || url.startsWith("https://"))) {
+            console.log(config.uploadProtocol);
             url = `${config.uploadProtocol}://${url}`;
         }
     } else {
