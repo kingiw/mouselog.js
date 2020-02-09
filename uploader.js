@@ -1,3 +1,5 @@
+let {config} = require('./config');
+
 let StatusEnum = {
     FAILED: -1,
     WAITING: 0,
@@ -11,20 +13,13 @@ class Uploader {
         this.enable = false;
     }
 
-    start(serverUrl, websiteId, impressionId, options) {
-        this.serverUrl = serverUrl;
-        this.websiteId = websiteId;
+    start(impressionId) {
         this.impressionId = impressionId;
 
-        // Resend all the failed data in this.buf every `resendInterval` ms
-        let resendInterval = options.resendInterval ? options.resendInterval : 3000;
         this.resendInterval = setInterval(()=>{
             this.resendFailedData.call(this);
-        }, resendInterval);
+        }, config.resendInterval);
         
-        this.enableGET = options.enableGET ? options.enableGET : false;
-        this.encoder = options.encoder ? options.encoder : JSON.stringify;
-        this.decoder = options.decoder ? options.decoder : x=>x;
         this.enable = true;
     }
 
@@ -53,16 +48,16 @@ class Uploader {
     }
 
     _getUploadPromise(encodedData) {
-        if (this.enableGET) {
+        if (config.enableGet) {
             return new Promise((resolve, reject) => {
-                fetch(`${this.serverUrl}/api/upload-trace?websiteId=${this.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
+                fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
                     method: "GET", 
                     credentials: "include"
                 })
             });
         } else {
             return new Promise((resolve, reject) => {
-                fetch(`${this.serverUrl}/api/upload-trace?websiteId=${this.websiteId}&impressionId=${this.impressionId}`, {
+                fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}`, {
                     method: "POST",
                     credentials: "include",
                     body: encodedData
@@ -73,7 +68,7 @@ class Uploader {
     
     _uploadData(obj) {
         obj.status = StatusEnum.SENDING;
-        let encodedData = this.encoder(obj.data);
+        let encodedData = config.encoder(obj.data);
         this._getUploadPromise(encodedData)
         .then(res => {
             if (res.status == 200) {

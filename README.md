@@ -10,18 +10,26 @@ Mouselog.js is the client-side agent for Microsoft's [Mouselog](https://github.c
 ## Embedded JS
 Embed Mouselog in your HTML files:
 ```html
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mouselog@0.0.7-beta1/mouselog.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mouselog@latest/mouselog.js"></script>
 <script>
-    mouselog.run("Your_Server_Url", "Your_Website_Id");
+    mouselog.run({
+        uploadEndpoint: "Your_Server_Url",
+        websiteId: "Your_Website_Id",
+        endpointType: "absolute"
+    });
 </script>
 ```
 You can also refer mouselog dynamically in Javascript:
 ```Javascript
 (function() {
     var script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/mouselog@0.0.7-beta1/mouselog.js";
+    script.src = "https://cdn.jsdelivr.net/npm/mouselog@latest/mouselog.js";
     script.onload = () => {
-        mouselog.run("Your_Server_Url", "Your_Website_Id");
+        mouselog.run({
+            uploadEndpoint: "Your_Server_Url",
+            websiteId: "Your_Website_Id",
+            endpointType: "absolute"
+        });
     }
     var t = document.getElementsByTagName("script");
     var s = t.length > 0 ? t[0].parentNode : document.body;
@@ -35,38 +43,67 @@ Install Mouselog.js via
 npm i mouselog --save
 ```
 
-Then load and configure mouselog
+Then run Mouselog and it will automatically collect all you want.
 ```Javascript
 const mouselog = require('mouselog');
-let config = {
-    // Set upload mode: "periodic" or "event-triggered"
+mouselog.run({
+    uploadEndpoint: "Your_Server_Url",
+    websiteId: "Your_Website_Id",
+    endpointType: "absolute"
+});
+```
+You can also deactivate Mouselog by calling `mouselog.stop()`.
+
+
+# Configuration
+The default configuration:
+```JSON
+{
+    // Type: string
+    // Endpoint Url
+    uploadEndpoint: REQUIRED,
+
+    // Type: string
+    // Website ID
+    websiteId: "unknown",
+
+    // Endpoint type, "absolute" or "relative"
+    endpointType: "absolute",
+
+    // upload protocol, "https" or "http"
+    // If you declare it in `uploadEndpoint`, this property will be ignored. 
+    uploadProtocol: "https",
+
+    // Upload mode, "periodic" or "event-triggered"
     uploadMode: "periodic",
 
+    // Type: number
     // If `uploadMode` == "periodic", data will be uploaded every `uploadPeriod` ms.
     // If no data are collected in a period, no data will be uploaded
     uploadPeriod: 5000,
 
+    // Type: number
     // If `uploadMode` == "event-triggered"
     // The website interaction data will be uploaded when every `frequency` events are captured.
     frequency: 50,
 
+    // Type: bool
+    // Use GET method to upload data? (stringified data will be embedded in URI)
+    enableGet: false, 
+
+    // Type: function
     // The website interaction data will be encoded by `encoder` before uploading to the server.
     encoder: JSON.stringify,
+
+    // Type: function
     // The response data will be decoded by `decoder` 
-    decoder: x => x, 
-    // Use GET method to upload data? (stringified data will be embedded in URI)
-    enableGET: false, 
+    decoder: x => x,
+
+    // Type: number
     // Time interval for resending the failed trace data
-    resendInterval: 3000
-};
+    resendInterval: 3000, 
+}
 ```
-Run Mouselog and it will automatically collect all you want.
-```Javascript
-mouselog.run("YOUR_SERVER_URL", "YOUR_WEBSITE_ID", config);
-```
-
-You can also deactivate Mouselog by calling `mouselog.stop()`.
-
 # Demo
 [Mouselog-demo](https://github.com/hsluoyz/mouselog-demo)
 
