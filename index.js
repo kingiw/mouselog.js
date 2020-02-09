@@ -16,7 +16,7 @@ let targetEvents = [
     "touchend"
 ];
 
-let uploader = new Uploader();
+let uploader;
 let impressionId;
 let serverUrl;
 let websiteId;
@@ -24,7 +24,6 @@ let eventsList;
 let pageLoadTime;
 let uploadIdx;
 let uploadInterval;
-let enable = false;
 
 function getRelativeTimestampInSeconds() {
     let diff = new Date() - pageLoadTime;
@@ -37,16 +36,6 @@ function getButton(btn) {
     } else {
         return ""
     }
-}
-
-function getByteCount(s) {
-    let count = 0, stringLength = s.length, i;
-    s = String(s || "");
-    for (i = 0; i < stringLength; i++) {
-      const partCount = encodeURI(s[i]).split("%").length;
-      count += partCount === 1 ? 1 : partCount - 1;
-    }
-    return count;
 }
 
 function newTrace() {
@@ -106,25 +95,36 @@ function mouseHandler(evt) {
     }
 }
 
-export function refresh() {
-    eventsList = [];
-    pageLoadTime = new Date();
-    uploadIdx = 0;
-    uploader.start(impressionId);
+function clearBuffer() {
+    eventList = [];
 }
 
-export function run(params) {
+// Initialize the mouselog
+function init(params) {
+    clearBuffer();
+    pageLoadTime = new Date();
+    uploadIdx = 0;
+    uploader = new Uploader();
+    impressionId = uuidv4();
+
     buildConfig(params);
 
-    impressionId = uuidv4();
-    refresh();
-    
+    // Fetch config when mouselog is activated
+    // The backend server may return a new config and overwrite the agent's config
+    uploadTrace(true);
+
+    // clean up the buffer before unloading the window
+    onbeforeunload = (evt) => {
+        if (eventsList.length != 0) {
+            uploadTrace();
+        }
+    }
+}
+
+function runCollector() {
     targetEvents.forEach( s => {
         window.document.addEventListener(s, (evt) => mouseHandler(evt));
     });
-
-    // Send an empty trace data when mouselog is activated
-    uploadTrace(true);
 
     if (config.uploadMode === "periodic") {
         uploadInterval = setInterval(() => {
@@ -133,19 +133,32 @@ export function run(params) {
             }
         }, config.uploadPeriod);
     }
-
-    // clean up before unloading the window
-    onbeforeunload = (evt) => {
-        if (eventsList.length != 0) {
-            uploadTrace();
-        }
-    }
 }
 
-export function stop() {
+function stopCollector() {
     targetEvents.forEach( s => {
         window.document.removeEventListener(s, (evt) => mouseHandler(evt));
     });
     clearInterval(uploadInterval);
-    uploader.stop();
 }
+
+function onConfigChange() {
+    stopCollector();
+    uploader.stop();
+    uploader.start();
+    runCollector();
+}
+window.addEventListener("configChange", onConfigChange);
+
+export function run(params) {
+    init();
+    runCollector();
+    uploader.start();
+}
+
+export function stop() {
+    uploader.stop();
+    stopCollector();
+    clearBuffer();
+}
+

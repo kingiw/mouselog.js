@@ -57,10 +57,15 @@ let buildConfig = (params) => {
             throw new Error(`Param ${key} is required but not declared.`);
         }
     });
-    Object.keys(params).forEach(key => {
-        config[key] = params[key];
-    });
+    config = Object.assign(config, params);
     config.absoluteUrl = formatUrl();
+}
+
+let updateConfig = (params) => {
+    buildConfig(params);
+    // Fire an event when config is updated.
+    let configChangeEvt = new Event("configChange");
+    window.dispatchEvent(configChangeEvt);
 }
 
 let formatUrl = () => {
@@ -88,4 +93,4 @@ let formatUrl = () => {
     return url;
 }
 
-module.exports = { config, buildConfig }
+module.exports = { config, buildConfig, updateConfig }

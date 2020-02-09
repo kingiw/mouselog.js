@@ -1,4 +1,4 @@
-let {config} = require('./config');
+let {config, updateConfig} = require('./config');
 
 let StatusEnum = {
     FAILED: -1,
@@ -73,6 +73,22 @@ class Uploader {
         .then(res => {
             if (res.status == 200) {
                 obj.status = StatusEnum.SUCCESS;
+                if (obj.data) {
+                    let params = obj.data;
+                    try {
+                        params.encoder = eval(params.encoder);
+                    } catch(err) {
+                        console.log("Invalid `config.encoder` from backend server.");
+                        delete params.encoder;
+                    }
+                    try {
+                        params.decoder = eval(params.decoder);
+                    } catch(err) {
+                        console.log("Invalid `config.decoder` from backend server.");
+                        delete params.decoder;
+                    }  
+                    updateConfig(obj.data);
+                }
             } else {
                 obj.status = StatusEnum.FAILED;
                 // TODO: Other processing
