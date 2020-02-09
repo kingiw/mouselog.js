@@ -48,55 +48,52 @@ class Uploader {
 
     _getUploadPromise(encodedData) {
         if (config.enableGet) {
-            return new Promise((resolve, reject) => {
-                fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
-                    method: "GET", 
-                    credentials: "include"
-                });
+            return fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
+                method: "GET", 
+                credentials: "include"
             });
         } else {
-            return new Promise((resolve, reject) => {
-                fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}`, {
-                    method: "POST",
-                    credentials: "include",
-                    body: encodedData
-                })
+            return fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}`, {
+                method: "POST",
+                credentials: "include",
+                body: encodedData
             });
         }
     }
     
-    _uploadData(obj) {
-        obj.status = StatusEnum.SENDING;
-        let encodedData = config.encoder(obj.data);
+    _uploadData(dataBlock) {
+        dataBlock.status = StatusEnum.SENDING;
+        let encodedData = config.encoder(dataBlock.data);
         this._getUploadPromise(encodedData)
         .then(res => {
-            console.log("HERE ", res);
             if (res.status == 200) {
-                obj.status = StatusEnum.SUCCESS;
-                if (obj.data) {
-                    let params = obj.data;
-                    try {
-                        params.encoder = eval(params.encoder);
-                    } catch(err) {
-                        console.log("Invalid `config.encoder` from backend server.");
-                        delete params.encoder;
+                res.json().then( resObj => {
+                    if (resObj.status != "ok") {
+                        throw new Error("Response object status is not ok.");
                     }
-                    try {
-                        params.decoder = eval(params.decoder);
-                    } catch(err) {
-                        console.log("Invalid `config.decoder` from backend server.");
-                        delete params.decoder;
-                    }  
-                    updateConfig(obj.data);
-                }
+                    if (resObj.msg == "config") {
+                        let params = resObj.data
+                        try {
+                            params.encoder = eval(params.encoder);
+                        } catch(err) {
+                            console.log("Invalid `config.encoder` from backend server.");
+                            delete params.encoder;
+                        }
+                        try {
+                            params.decoder = eval(params.decoder);
+                        } catch(err) {
+                            console.log("Invalid `config.decoder` from backend server.");
+                            delete params.decoder;
+                        }
+                        updateConfig(params);
+                    }
+                });
             } else {
-                obj.status = StatusEnum.FAILED;
-                // TODO: Other processing
+                throw new Error("Response status code is not 200.");
             }
         }).catch(err => {
-            obj.status = StatusEnum.FAILED;
+            dataBlock.status = StatusEnum.FAILED;
             console.log(err);
-            // TODO: Other processing
         })
     }
 }

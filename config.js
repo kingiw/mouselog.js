@@ -57,7 +57,6 @@ let configHash;
 let buildConfig = (params) => {
     try {
         requiredParams.forEach(key => {
-            console.log(params);
             if (!(params.hasOwnProperty(key))) {
                 throw new Error(`Param ${key} is required but not declared.`);
             }
@@ -104,7 +103,6 @@ let formatUrl = () => {
         url = `${config.uploadProtocol}://${window.location.hostname}${url}`;
     } else if (config.endpointType == "absolute") {
         if (!(url.startsWith("http://") || url.startsWith("https://"))) {
-            console.log(config.uploadProtocol);
             url = `${config.uploadProtocol}://${url}`;
         }
     } else {
