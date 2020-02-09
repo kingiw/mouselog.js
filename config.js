@@ -1,3 +1,5 @@
+let Utils = require("./utils");
+
 // Default config
 let config = {
     // Type: string, REQUIRED
@@ -50,6 +52,7 @@ let config = {
 let requiredParams = [
     "uploadEndpoint",
 ];
+let configHash;
 
 let buildConfig = (params) => {
     requiredParams.forEach(key => {
@@ -59,10 +62,19 @@ let buildConfig = (params) => {
     });
     config = Object.assign(config, params);
     config.absoluteUrl = formatUrl();
+    configHash = Utils.getObjectHash(ordered);
 }
 
 let updateConfig = (params) => {
+    // First compare if the new config is the same as the old one.
+    let hash = Utils.getObjectHash(params);
+    if (hash == configHash) {
+        return;
+    }
+
+    // Generate new config
     buildConfig(params);
+    
     // Fire an event when config is updated.
     let configChangeEvt = new Event("configChange");
     window.dispatchEvent(configChangeEvt);
@@ -92,5 +104,7 @@ let formatUrl = () => {
     }
     return url;
 }
+
+
 
 module.exports = { config, buildConfig, updateConfig }
