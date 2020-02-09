@@ -18,8 +18,6 @@ let targetEvents = [
 
 let uploader;
 let impressionId;
-let serverUrl;
-let websiteId;
 let eventsList;
 let pageLoadTime;
 let uploadIdx;
@@ -104,11 +102,12 @@ function init(params) {
     uploadIdx = 0;
     uploader = new Uploader();
     impressionId = uuidv4();
+    uploader.setImpressionId(impressionId);
 
     if (buildConfig(params)) {
         // Upload an empty data to fetch config from backend
         uploadTrace().then( result => {
-            if (result) {
+            if (result.status == 0) { // Success
                 // clean up the buffer before unloading the window
                 onbeforeunload = (evt) => {
                     if (eventsList.length != 0) {
@@ -116,7 +115,8 @@ function init(params) {
                     }
                 }
                 return true;
-            } else {
+            } else {    // Fail
+                console.log(result.msg);
                 return false;
             }
         });
@@ -146,18 +146,11 @@ function stopCollector() {
     clearInterval(uploadInterval);
 }
 
-function onConfigChange() {
-    stopCollector();
-    uploader.stop();
-    uploader.start(impressionId);
-    runCollector();
-}
-window.addEventListener("configChange", onConfigChange);
-
 export function run(params) {
     if (init(params)) {
         runCollector();
         uploader.start(impressionId);
+        console.log("Mouselog agent is activated!");
     }
 }
 
@@ -165,5 +158,6 @@ export function stop() {
     uploader.stop();
     stopCollector();
     clearBuffer();
+    console.log("Mouselog agent is stopped!");
 }
 

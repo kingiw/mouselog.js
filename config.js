@@ -1,4 +1,4 @@
-let Utils = require("./utils");
+
 
 // Default config
 let config = {
@@ -52,8 +52,8 @@ let config = {
 let requiredParams = [
     "uploadEndpoint",
 ];
-let configHash;
 
+// Returns a boolean indicating if config is built successfully
 let buildConfig = (params) => {
     try {
         requiredParams.forEach(key => {
@@ -62,7 +62,6 @@ let buildConfig = (params) => {
             }
         });
         config = Object.assign(config, params);
-        configHash = Utils.getObjectHash(config);
         config.absoluteUrl = formatUrl();
     } catch(err) {
         console.log(err);
@@ -72,18 +71,19 @@ let buildConfig = (params) => {
 }
 
 let updateConfig = (params) => {
-    // First compare if the new config is the same as the old one.
-    let hash = Utils.getObjectHash(params);
-    if (hash == configHash) {
-        return;
-    }
-    // Generate new config
-    if (buildConfig(params)) {
-        // If success, fire an event when config is updated.
-        let configChangeEvt = new Event("configChange");
-        window.dispatchEvent(configChangeEvt);
+
+    if (typeof(params.encoder) !== "function") {
+        console.log("Invalid encoder from backend.");
+        params.encoder = str2Func(params.encoder);
+    };
+
+    if (typeof(params.decoder) !== "function") {
+        console.log("Invalid decoder from backend.");
+        params.decoder = str2Func(params.decoder);
     }
 
+    // Generate new config
+    return buildConfig(params);
 }
 
 let formatUrl = () => {
@@ -109,6 +109,16 @@ let formatUrl = () => {
         throw new Error('`endpointType` can only be "absolute" or "relative"');
     }
     return url;
+}
+
+
+function str2Func(s) {
+    try {
+        return eval(s);
+    } catch(err) {
+        console.log(err.message);
+        return undefined;
+    }
 }
 
 

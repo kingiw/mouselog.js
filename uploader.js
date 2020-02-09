@@ -24,8 +24,10 @@ class Uploader {
     }
 
     upload(data) {
-        return new Promise( (resolve) => {
-            let encodedData = config.encoder(data.data);
+        // resolve(true/false): uploaded success/fail.
+        // reject(ErrorMessage): Errors occur when updating the config.
+        return new Promise( (resolve, reject) => {
+            let encodedData = config.encoder(data);
             this._upload(encodedData).then(res => {
                 if (res.status == 200) {
                     res.json().then( resObj => {
@@ -33,22 +35,24 @@ class Uploader {
                             throw new Error("Response object status is not ok.");
                         }
                         if (resObj.msg == "config") {
-                            let params = resObj.data;
-                            params.encoder = Utils.str2Func(params.encoder);
-                            params.decoder = Utils.str2Func(params.decoder);
-                            updateConfig(params);
+                           if (!updateConfig(resObj.data)) {
+                               resolve({stauts: -1, msg: `Data is uploaded, but errors occur when updating config.`});
+                           };
                         }
-                        resolve(true);
+                        resolve({stauts: 0});
                     });
                 } else {
                     throw new Error("Response status code is not 200.");
                 }
             }).catch(err => {
-                console.log(err);
                 _appendFailedData(data);
-                resolve(false);
+                resolve({status: -1, msg: `Fail to upload a bunch of data: ${err.message}`});
             })
         });
+    }
+
+    setImpressionId(impId) {
+        this.impressionId = impId;
     }
 
     _resendFailedData() {
