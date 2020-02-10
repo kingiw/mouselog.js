@@ -57,7 +57,8 @@ You can also deactivate Mouselog by calling `mouselog.stop()`.
 
 # Configuration
 The default configuration:
-```JSON
+
+```js
 {
     // Type: string
     // Endpoint Url
@@ -96,6 +97,7 @@ The default configuration:
     resendInterval: 3000, 
 }
 ```
+
 # Demo
 [Mouselog-demo](https://github.com/hsluoyz/mouselog-demo)
 
