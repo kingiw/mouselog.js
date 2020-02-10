@@ -1,3 +1,5 @@
+
+
 // Default config
 let config = {
     // Type: string, REQUIRED
@@ -51,16 +53,37 @@ let requiredParams = [
     "uploadEndpoint",
 ];
 
+// Returns a boolean indicating if config is built successfully
 let buildConfig = (params) => {
-    requiredParams.forEach(key => {
-        if (!(key in params)) {
-            throw new Error(`Param ${key} is required but not declared.`);
-        }
-    });
-    Object.keys(params).forEach(key => {
-        config[key] = params[key];
-    });
-    config.absoluteUrl = formatUrl();
+    try {
+        requiredParams.forEach(key => {
+            if (!(params.hasOwnProperty(key))) {
+                throw new Error(`Param ${key} is required but not declared.`);
+            }
+        });
+        config = Object.assign(config, params);
+        config.absoluteUrl = formatUrl();
+    } catch(err) {
+        console.log(err);
+        return false;
+    }
+    return true;
+}
+
+let updateConfig = (params) => {
+
+    if (typeof(params.encoder) !== "function") {
+        console.log("Invalid encoder from backend.");
+        params.encoder = str2Func(params.encoder);
+    };
+
+    if (typeof(params.decoder) !== "function") {
+        console.log("Invalid decoder from backend.");
+        params.decoder = str2Func(params.decoder);
+    }
+
+    // Generate new config
+    return buildConfig(params);
 }
 
 let formatUrl = () => {
@@ -88,4 +111,16 @@ let formatUrl = () => {
     return url;
 }
 
-module.exports = { config, buildConfig }
+
+function str2Func(s) {
+    try {
+        return eval(s);
+    } catch(err) {
+        console.log(err.message);
+        return undefined;
+    }
+}
+
+
+
+module.exports = { config, buildConfig, updateConfig }

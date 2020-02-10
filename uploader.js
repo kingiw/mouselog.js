@@ -1,88 +1,103 @@
-let {config} = require('./config');
+let {config, updateConfig} = require('./config');
 
 let StatusEnum = {
-    FAILED: -1,
     WAITING: 0,
-    SUCCESS: 1,
-    SENDING: 2,
+    SENDING: 1,
+    SUCCESS: 2,
 }
 
 class Uploader {
     constructor() {
-        this.buf = [];
-        this.enable = false;
+        this.resendQueue = [];
     }
 
     start(impressionId) {
         this.impressionId = impressionId;
-
         this.resendInterval = setInterval(()=>{
-            this.resendFailedData.call(this);
+            this._resendFailedData.call(this);
         }, config.resendInterval);
-        
-        this.enable = true;
     }
 
     stop() {
-        this.enable = false;
         clearInterval(this.resendInterval);
         // TODO?: Send all the remaining data in this.buf
     }
 
     upload(data) {
-        if (!this.enable) return;
-        this.buf.push({
-            status: StatusEnum.WAITING,
-            data: data
+        // resolve(true/false): uploaded success/fail.
+        // reject(ErrorMessage): Errors occur when updating the config.
+        return new Promise( (resolve, reject) => {
+            let encodedData = config.encoder(data);
+            this._upload(encodedData).then(res => {
+                if (res.status == 200) {
+                    res.json().then( resObj => {
+                        if (resObj.status !== "ok") {
+                            throw new Error("Response object status is not ok.");
+                        }
+                        if (resObj.msg == "config") {
+                           if (!updateConfig(resObj.data)) {
+                               resolve({stauts: -1, msg: `Data is uploaded, but errors occur when updating config.`});
+                           };
+                        }
+                        resolve({stauts: 0});
+                    });
+                } else {
+                    throw new Error("Response status code is not 200.");
+                }
+            }).catch(err => {
+                _appendFailedData(data);
+                resolve({status: -1, msg: `Fail to upload a bunch of data: ${err.message}`});
+            })
         });
-        this._uploadData(this.buf[this.buf.length - 1]);
     }
 
-    resendFailedData() {
-        if (!this.enable) return;
-        this.buf.forEach( obj => {
-            if (obj.status == StatusEnum.FAILED) {
-                this._uploadData(obj);
+    setImpressionId(impId) {
+        this.impressionId = impId;
+    }
+
+    _resendFailedData() {
+        let i = 0;
+        while (i < this.resendQueue.length) {
+            if (obj.status == StatusEnum.SUCCESS) {
+                this.resendQueue.splice(i, 1);  // Remove it from resendQueue
+            } else {
+                i += 1;
+                if (obj.status == StatusEnum.WAITING) {
+                    obj.status = StatusEnum.SENDING;
+                    this.upload(obj.data).then( result => {
+                        if (result) { // Successfully resend the data
+                            obj.status = StatusEnum.SUCCESS;
+                        } else {
+                            obj.status = StatusEnum.WAITING;
+                        }
+                    });
+                }
             }
-        })
+        }
     }
 
-    _getUploadPromise(encodedData) {
+    _upload(encodedData) {
         if (config.enableGet) {
-            return new Promise((resolve, reject) => {
-                fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
-                    method: "GET", 
-                    credentials: "include"
-                })
+            return fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
+                method: "GET", 
+                credentials: "include"
             });
         } else {
-            return new Promise((resolve, reject) => {
-                fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}`, {
-                    method: "POST",
-                    credentials: "include",
-                    body: encodedData
-                })
+            return fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}`, {
+                method: "POST",
+                credentials: "include",
+                body: encodedData
             });
         }
     }
-    
-    _uploadData(obj) {
-        obj.status = StatusEnum.SENDING;
-        let encodedData = config.encoder(obj.data);
-        this._getUploadPromise(encodedData)
-        .then(res => {
-            if (res.status == 200) {
-                obj.status = StatusEnum.SUCCESS;
-            } else {
-                obj.status = StatusEnum.FAILED;
-                // TODO: Other processing
-            }
-        }).catch(err => {
-            obj.status = StatusEnum.FAILED;
-            console.log(err);
-            // TODO: Other processing
-        })
+
+    _appendFailedData(data) {
+        this.resendQueue.push({
+            status: StatusEnum.WAITING,
+            data: data
+        });
     }
+    
 }
 
 module.exports = Uploader;
