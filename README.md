@@ -7,10 +7,10 @@ Mouselog.js
 
 Mouselog.js is the client-side agent for Microsoft's [Mouselog](https://github.com/microsoft/mouselog), a user behavior monitoring platform for websites.
 
-## Embedded JS
+## CDN
 Embed Mouselog in your HTML files:
 ```html
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mouselog@latest/mouselog.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mouselog@latest/build/mouselog.js"></script>
 <script>
     mouselog.run({
         uploadEndpoint: "Your_Server_Url",
@@ -19,11 +19,11 @@ Embed Mouselog in your HTML files:
     });
 </script>
 ```
-You can also refer mouselog dynamically in Javascript:
+You can also include mouselog dynamically in Javascript:
 ```Javascript
 (function() {
     var script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/mouselog@latest/mouselog.js";
+    script.src = "https://cdn.jsdelivr.net/npm/mouselog@latest/build/mouselog.js";
     script.onload = () => {
         mouselog.run({
             uploadEndpoint: "Your_Server_Url",
@@ -36,6 +36,13 @@ You can also refer mouselog dynamically in Javascript:
     s.appendChild(script, s);
 })();
 ```
+## Build Manually
+You can also bundle Mouselog.js manually via
+```
+npm i
+npm run build
+```
+This will generate the bundled scripts in `./build`.
 
 ## NPM
 Install Mouselog.js via
@@ -98,13 +105,8 @@ The default configuration:
 }
 ```
 
-# Demo
-[Mouselog-demo](https://github.com/hsluoyz/mouselog-demo)
-
-# Schema
-
-![image](schema.jpg)
-
+<!-- # Demo
+[Mouselog-demo](https://github.com/hsluoyz/mouselog-demo) -->
 
 # Contributing
 
