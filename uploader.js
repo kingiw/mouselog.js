@@ -45,7 +45,7 @@ class Uploader {
                     throw new Error("Response status code is not 200.");
                 }
             }).catch(err => {
-                _appendFailedData(data);
+                this._appendFailedData(data);
                 resolve({status: -1, msg: `Fail to upload a bunch of data: ${err.message}`});
             })
         });
