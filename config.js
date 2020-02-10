@@ -71,14 +71,11 @@ let buildConfig = (params) => {
 }
 
 let updateConfig = (params) => {
-
     if (typeof(params.encoder) !== "function") {
-        console.log("Invalid encoder from backend.");
         params.encoder = str2Func(params.encoder);
     };
 
     if (typeof(params.decoder) !== "function") {
-        console.log("Invalid decoder from backend.");
         params.decoder = str2Func(params.decoder);
     }
 
@@ -120,7 +117,5 @@ function str2Func(s) {
         return undefined;
     }
 }
-
-
 
 module.exports = { config, buildConfig, updateConfig }

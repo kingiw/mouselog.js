@@ -97,32 +97,33 @@ function clearBuffer() {
 
 // Initialize the mouselog
 function init(params) {
-    clearBuffer();
-    pageLoadTime = new Date();
-    uploadIdx = 0;
-    uploader = new Uploader();
-    impressionId = uuidv4();
-    uploader.setImpressionId(impressionId);
-
-    if (buildConfig(params)) {
-        // Upload an empty data to fetch config from backend
-        uploadTrace().then( result => {
-            if (result.status == 0) { // Success
-                // clean up the buffer before unloading the window
-                onbeforeunload = (evt) => {
-                    if (eventsList.length != 0) {
-                        uploadTrace();
+    return new Promise((resolve) => {
+        clearBuffer();
+        pageLoadTime = new Date();
+        uploadIdx = 0;
+        uploader = new Uploader();
+        impressionId = uuidv4();
+        uploader.setImpressionId(impressionId);
+        if (buildConfig(params)) {
+            // Upload an empty data to fetch config from backend
+            uploadTrace().then( result => {
+                if (result.status === 0) { // Success
+                    // clean up the buffer before unloading the window
+                    onbeforeunload = (evt) => {
+                        if (eventsList.length != 0) {
+                            uploadTrace();
+                        }
                     }
+                    resolve({status: 0});
+                } else {    // Fail
+                    console.log(result.msg);
+                    resolve({status: -1, msg: `Fail to initialize config.`});
                 }
-                return true;
-            } else {    // Fail
-                console.log(result.msg);
-                return false;
-            }
-        });
-    } else {
-        return false;
-    }
+            });
+        } else {
+            resolve({status: -1, msg: `Fail to initialize config.`});
+        }
+    })
 }
 
 function runCollector() {
@@ -147,11 +148,16 @@ function stopCollector() {
 }
 
 export function run(params) {
-    if (init(params)) {
-        runCollector();
-        uploader.start(impressionId);
-        console.log("Mouselog agent is activated!");
-    }
+    init(params).then( res => {
+        if (res.status === 0) {
+            runCollector();
+            uploader.start(impressionId);
+            console.log("Mouselog agent is activated!");
+        } else {
+            console.log(res.msg);
+            console.log("Fail to initialize Mouselog agent.");
+        }
+    })
 }
 
 export function stop() {

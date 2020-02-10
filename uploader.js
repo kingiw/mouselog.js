@@ -36,10 +36,10 @@ class Uploader {
                         }
                         if (resObj.msg == "config") {
                            if (!updateConfig(resObj.data)) {
-                               resolve({stauts: -1, msg: `Data is uploaded, but errors occur when updating config.`});
+                               resolve({status: -1, msg: `Data is uploaded, but errors occur when updating config.`});
                            };
                         }
-                        resolve({stauts: 0});
+                        resolve({status: 0});
                     });
                 } else {
                     throw new Error("Response status code is not 200.");
