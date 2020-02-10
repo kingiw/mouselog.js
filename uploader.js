@@ -27,7 +27,7 @@ class Uploader {
         // resolve(true/false): uploaded success/fail.
         // reject(ErrorMessage): Errors occur when updating the config.
         return new Promise( (resolve, reject) => {
-            let encodedData = config.encoder(data);
+            let encodedData = JSON.stringify(data);
             this._upload(encodedData).then(res => {
                 if (res.status == 200) {
                     res.json().then( resObj => {

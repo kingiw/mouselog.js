@@ -30,14 +30,6 @@ let config = {
     // The website interaction data will be uploaded when every `frequency` events are captured.
     frequency: 50,
 
-    // Type: function
-    // The website interaction data will be encoded by `encoder` before uploading to the server.
-    encoder: JSON.stringify,
-
-    // Type: function
-    // The response data will be decoded by `decoder` 
-    decoder: x => x,
-
     // Type: bool
     // Use GET method to upload data? (stringified data will be embedded in URI)
     enableGet: false, 
@@ -71,14 +63,6 @@ let buildConfig = (params) => {
 }
 
 let updateConfig = (params) => {
-    if (typeof(params.encoder) !== "function") {
-        params.encoder = str2Func(params.encoder);
-    };
-
-    if (typeof(params.decoder) !== "function") {
-        params.decoder = str2Func(params.decoder);
-    }
-
     // Generate new config
     return buildConfig(params);
 }
@@ -106,16 +90,6 @@ let formatUrl = () => {
         throw new Error('`endpointType` can only be "absolute" or "relative"');
     }
     return url;
-}
-
-
-function str2Func(s) {
-    try {
-        return eval(s);
-    } catch(err) {
-        console.log(err.message);
-        return undefined;
-    }
 }
 
 module.exports = { config, buildConfig, updateConfig }
