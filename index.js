@@ -21,7 +21,8 @@ let impressionId;
 let eventsList;
 let pageLoadTime;
 let uploadIdx;
-let uploadInterval;
+let uploadInterval; // For "periodic" upload mode
+let uploadTimeout; // For "mixed" upload mode
 
 function getRelativeTimestampInSeconds() {
     let diff = new Date() - pageLoadTime;
@@ -60,6 +61,23 @@ function uploadTrace() {
     return uploader.upload(trace); // This is a promise
 }
 
+function periodUploadTimeout() {
+    clearTimeout(uploadTimeout);  // Remove previous timeout
+    uploadTimeout = setTimeout(() => {
+        if (eventsList.length > 0) {
+            uploadTrace();
+        }
+    }, config.uploadPeriod);
+}
+
+function periodUploadInterval() {
+    uploadInterval = setInterval(() => {
+        if (eventsList.length != 0) {
+            uploadTrace();
+        }
+    }, config.uploadPeriod);
+}
+
 function mouseHandler(evt) {
     // PC's Chrome on Mobile mode can still receive "contextmenu" event with zero X, Y, so we ignore these events.
     if (evt.type === 'contextmenu' && evt.pageX === 0 && evt.pageY === 0) {
@@ -85,8 +103,13 @@ function mouseHandler(evt) {
         tmpEvt.deltaY = evt.deltaY;
     }
     eventsList.push(tmpEvt);
-    
+
     if ( config.uploadMode == "event-triggered" && eventsList.length % config.frequency == 0 ) {
+        uploadTrace();
+    }
+
+    if ( config.uploadMode == "mixed" && eventsList.length % config.frequency == 0) {
+        periodUploadTimeout();
         uploadTrace();
     }
 }
@@ -132,11 +155,11 @@ function runCollector() {
     });
 
     if (config.uploadMode === "periodic") {
-        uploadInterval = setInterval(() => {
-            if (eventsList.length != 0) {
-                uploadTrace();
-            }
-        }, config.uploadPeriod);
+        periodUploadInterval();
+    } 
+
+    if (config.uploadMode == "mixed") {
+        periodUploadTimeout();
     }
 }
 
@@ -145,6 +168,7 @@ function stopCollector() {
         window.document.removeEventListener(s, (evt) => mouseHandler(evt));
     });
     clearInterval(uploadInterval);
+    clearTimeout(uploadTimeout);
 }
 
 export function run(params) {

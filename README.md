@@ -82,7 +82,10 @@ The default configuration:
     // If you declare it in `uploadEndpoint`, this property will be ignored. 
     uploadProtocol: "https",
 
-    // Upload mode, "periodic" or "event-triggered"
+    // Upload mode, "mix", "periodic" or "event-triggered"
+    // "periodic": upload data in every period.
+    // "event-triggered": upload data when a number of interaction data is captured
+    // "mixed": the mixture of the previous two upload mode 
     uploadMode: "periodic",
 
     // Type: number
