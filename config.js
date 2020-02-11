@@ -17,11 +17,11 @@ let config = {
     // If you declare it in `uploadEndpoint`, this property will be ignored. 
     uploadProtocol: "https",
 
-    // Upload mode, "periodic" or "event-triggered"
-    uploadMode: "periodic",
+    // Upload mode, "mixed", "periodic" or "event-triggered"
+    uploadMode: "mix",
 
     // Type: number
-    // If `uploadMode` == "periodic", data will be uploaded every `uploadPeriod` ms.
+    // If `uploadMode` is "mixed", "periodic", data will be uploaded every `uploadPeriod` ms.
     // If no data are collected in a period, no data will be uploaded
     uploadPeriod: 5000,
 
