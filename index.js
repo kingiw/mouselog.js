@@ -62,7 +62,7 @@ function uploadTrace() {
 }
 
 function periodUploadTimeout() {
-    clearTimeout(uploadTimeout);  // Remove previous timeout
+    clearTimeout(uploadTimeout);
     uploadTimeout = setTimeout(() => {
         if (eventsList.length > 0) {
             uploadTrace();
@@ -71,6 +71,7 @@ function periodUploadTimeout() {
 }
 
 function periodUploadInterval() {
+    clearInterval(uploadInterval);
     uploadInterval = setInterval(() => {
         if (eventsList.length != 0) {
             uploadTrace();
@@ -120,33 +121,31 @@ function clearBuffer() {
 
 // Initialize the mouselog
 function init(params) {
-    return new Promise((resolve) => {
-        clearBuffer();
-        pageLoadTime = new Date();
-        uploadIdx = 0;
-        uploader = new Uploader();
-        impressionId = uuidv4();
-        uploader.setImpressionId(impressionId);
-        if (buildConfig(params)) {
-            // Upload an empty data to fetch config from backend
-            uploadTrace().then( result => {
-                if (result.status === 0) { // Success
-                    // clean up the buffer before unloading the window
-                    onbeforeunload = (evt) => {
-                        if (eventsList.length != 0) {
-                            uploadTrace();
-                        }
-                    }
-                    resolve({status: 0});
-                } else {    // Fail
-                    console.log(result.msg);
-                    resolve({status: -1, msg: `Fail to initialize config.`});
-                }
-            });
-        } else {
-            resolve({status: -1, msg: `Fail to initialize config.`});
+    clearBuffer();
+    pageLoadTime = new Date();
+    uploadIdx = 0;
+    uploader = new Uploader();
+    impressionId = uuidv4();
+    uploader.setImpressionId(impressionId);
+    if (buildConfig(params)) {
+        // Async: Upload an empty data to ofetch config from backend
+        uploadTrace().then( result => {
+            if (result.status === 0) { // Config is updated successfully
+                resetCollector();
+            } else {
+                console.log(result.msg);
+                console.log("Fail to overwrite config with server config.")
+            }
+        });
+        onbeforeunload = (evt) => {
+            if (eventsList.length != 0) {
+                uploadTrace();
+            }
         }
-    })
+        return {status: 0, msg: `Invalid configuration.`};
+    } else {
+        return {status: -1, msg: `Invalid configuration.`}
+    }
 }
 
 function runCollector() {
@@ -171,17 +170,21 @@ function stopCollector() {
     clearTimeout(uploadTimeout);
 }
 
+function resetCollector(removeData = false) {
+    stopCollector();
+    runCollector();
+}
+
 export function run(params) {
-    init(params).then( res => {
-        if (res.status === 0) {
-            runCollector();
-            uploader.start(impressionId);
-            console.log("Mouselog agent is activated!");
-        } else {
-            console.log(res.msg);
-            console.log("Fail to initialize Mouselog agent.");
-        }
-    })
+    let res = init(params);
+    if (res.status == 0) {
+        runCollector();
+        uploader.start(impressionId);
+        console.log("Mouselog agent is activated!");
+    } else {
+        console.log(res.msg);
+        console.log("Fail to initialize Mouselog agent.");
+    }
 }
 
 export function stop() {
