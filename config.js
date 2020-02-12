@@ -14,7 +14,7 @@ let config = {
     endpointType: "absolute",
 
     // Upload mode, "mixed", "periodic" or "event-triggered"
-    uploadMode: "mix",
+    uploadMode: "mixed",
 
     // Type: number
     // If `uploadMode` is "mixed", "periodic", data will be uploaded every `uploadPeriod` ms.

@@ -78,11 +78,11 @@ The default configuration:
     // Endpoint type, "absolute" or "relative"
     endpointType: "absolute",
 
-    // Upload mode, "mix", "periodic" or "event-triggered"
+    // Upload mode, "mixed", "periodic" or "event-triggered"
     // "periodic": upload data in every period.
     // "event-triggered": upload data when a number of interaction data is captured
     // "mixed": the mixture of the previous two upload mode 
-    uploadMode: "periodic",
+    uploadMode: "mixed",
 
     // Type: number
     // If `uploadMode` == "periodic", data will be uploaded every `uploadPeriod` ms.
