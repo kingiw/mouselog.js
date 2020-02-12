@@ -57,6 +57,7 @@ class Uploader {
 
     _resendFailedData() {
         let i = 0;
+        let obj = this.resendQueue[i];
         while (i < this.resendQueue.length) {
             if (obj.status == StatusEnum.SUCCESS) {
                 this.resendQueue.splice(i, 1);  // Remove it from resendQueue

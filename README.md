@@ -78,15 +78,11 @@ The default configuration:
     // Endpoint type, "absolute" or "relative"
     endpointType: "absolute",
 
-    // upload protocol, "https" or "http"
-    // If you declare it in `uploadEndpoint`, this property will be ignored. 
-    uploadProtocol: "https",
-
-    // Upload mode, "mix", "periodic" or "event-triggered"
+    // Upload mode, "mixed", "periodic" or "event-triggered"
     // "periodic": upload data in every period.
     // "event-triggered": upload data when a number of interaction data is captured
     // "mixed": the mixture of the previous two upload mode 
-    uploadMode: "periodic",
+    uploadMode: "mixed",
 
     // Type: number
     // If `uploadMode` == "periodic", data will be uploaded every `uploadPeriod` ms.
@@ -100,11 +96,7 @@ The default configuration:
 
     // Type: bool
     // Use GET method to upload data? (stringified data will be embedded in URI)
-    enableGet: false, 
-    
-    // Type: number
-    // Time interval for resending the failed trace data
-    resendInterval: 3000, 
+    enableGet: false
 }
 ```
 

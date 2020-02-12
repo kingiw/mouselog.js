@@ -13,12 +13,8 @@ let config = {
     // Endpoint type, "absolute" or "relative"
     endpointType: "absolute",
 
-    // upload protocol, "https" or "http"
-    // If you declare it in `uploadEndpoint`, this property will be ignored. 
-    uploadProtocol: "https",
-
     // Upload mode, "mixed", "periodic" or "event-triggered"
-    uploadMode: "mix",
+    uploadMode: "mixed",
 
     // Type: number
     // If `uploadMode` is "mixed", "periodic", data will be uploaded every `uploadPeriod` ms.
@@ -70,23 +66,19 @@ let updateConfig = (params) => {
 let formatUrl = () => {
     let url = config.uploadEndpoint
     if (config.endpointType == "relative") {
-        // Format the head -> "/*"
+        // Format the head (the path should start with '/')
         if (url.startsWith("./")) {
             url = url.slice(1);
-        } else if (url[0] !== "/") {
-            url = `/${url}`;
+        } else if (url[0] !== "/") { 
+            url = "/" + url;
         }
         // Format the tail
         if (url[url.length-1] === "/") {
             url = url.slice(0, url.length-1);
         }
         // Construct absolute URL
-        url = `${config.uploadProtocol}://${window.location.hostname}${url}`;
-    } else if (config.endpointType == "absolute") {
-        if (!(url.startsWith("http://") || url.startsWith("https://"))) {
-            url = `${config.uploadProtocol}://${url}`;
-        }
-    } else {
+        url = `${window.location.origin}${url}`
+    } else if (config.endpointType !== "absolute") {
         throw new Error('`endpointType` can only be "absolute" or "relative"');
     }
     return url;
