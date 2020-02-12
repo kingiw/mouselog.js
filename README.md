@@ -78,10 +78,6 @@ The default configuration:
     // Endpoint type, "absolute" or "relative"
     endpointType: "absolute",
 
-    // upload protocol, "https" or "http"
-    // If you declare it in `uploadEndpoint`, this property will be ignored. 
-    uploadProtocol: "https",
-
     // Upload mode, "mix", "periodic" or "event-triggered"
     // "periodic": upload data in every period.
     // "event-triggered": upload data when a number of interaction data is captured
