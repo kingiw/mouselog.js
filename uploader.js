@@ -7,15 +7,16 @@ let StatusEnum = {
 }
 
 class Uploader {
-    constructor() {
+    constructor(impressionId, config) {
+        this.impressionId = impressionId;
+        this.config = config;
         this.resendQueue = [];
     }
 
-    start(impressionId) {
-        this.impressionId = impressionId;
+    start() {
         this.resendInterval = setInterval(()=>{
             this._resendFailedData.call(this);
-        }, config.resendInterval);
+        }, this.config.resendInterval);
     }
 
     stop() {
@@ -55,6 +56,10 @@ class Uploader {
         this.impressionId = impId;
     }
 
+    setConfig(config) {
+        this.config = config;
+    }
+
     _resendFailedData() {
         let i = 0;
         let obj = this.resendQueue[i];
@@ -78,13 +83,13 @@ class Uploader {
     }
 
     _upload(encodedData) {
-        if (config.enableGet) {
-            return fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
+        if (this.config.enableGet) {
+            return fetch(`${this.config.absoluteUrl}/api/upload-trace?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
                 method: "GET", 
                 credentials: "include"
             });
         } else {
-            return fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}`, {
+            return fetch(`${this.config.absoluteUrl}/api/upload-trace?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}`, {
                 method: "POST",
                 credentials: "include",
                 body: encodedData
