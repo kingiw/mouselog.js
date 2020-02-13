@@ -211,4 +211,4 @@ function getButton(btn) {
     }
 }
 
-module.exports = {Mouselog};
+module.exports = { Mouselog };

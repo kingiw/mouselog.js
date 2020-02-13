@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
     mode: "production",
-    entry: "./entry.js",
+    entry: "../index.js",
     output: {
         filename: "mouselog.js",
         path: path.resolve(__dirname, "../build"),
