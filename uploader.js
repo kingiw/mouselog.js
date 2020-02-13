@@ -25,7 +25,7 @@ class Uploader {
     }
 
     upload(data) {
-        // resolve(true/false): uploaded success/fail.
+        // resolve({status:-1/0/1, ...}): uploading success/fail.
         // reject(ErrorMessage): Errors occur when updating the config.
         return new Promise( (resolve, reject) => {
             let encodedData = JSON.stringify(data);
@@ -36,9 +36,11 @@ class Uploader {
                             throw new Error("Response object status is not ok.");
                         }
                         if (resObj.msg == "config") {
-                           if (!updateConfig(resObj.data)) {
-                               resolve({status: -1, msg: `Data is uploaded, but errors occur when updating config.`});
-                           };
+                            resolve({
+                                status: 1, 
+                                msg: `Get config from server`, 
+                                config: resObj.data
+                            });
                         }
                         resolve({status: 0});
                     });
@@ -47,7 +49,10 @@ class Uploader {
                 }
             }).catch(err => {
                 this._appendFailedData(data);
-                resolve({status: -1, msg: `Fail to upload a bunch of data: ${err.message}`});
+                resolve({
+                    status: -1, 
+                    msg: `Fail to upload a bunch of data, ${err.message}`
+                });
             })
         });
     }
@@ -57,7 +62,9 @@ class Uploader {
     }
 
     setConfig(config) {
+        this.stop();
         this.config = config;
+        this.start();
     }
 
     _resendFailedData() {

@@ -86,6 +86,12 @@ class Mouselog{
         }
     }
 
+    _fetchConfigFromServer() {
+        // Upload an empty trace to fetch config from server
+        let trace = this._newTrace();
+        return this.uploader.upload(trace); // This is a promise
+    }
+
     _uploadTrace() {
         let trace = this._newTrace();
         trace.events = this.eventsList;
@@ -145,21 +151,28 @@ class Mouselog{
         this.uploader = new Uploader(this.impressionId, this.config);
         this.uploader.setImpressionId(this.impressionId);
         if (this.config.build(config)) {
-             // Async: Upload an empty data to ofetch config from backend
-            this._uploadTrace().then( result => {
-                if (result.status === 0) { // Config is updated successfully
-                    this._resetCollector();
-                } else {
-                    console.log(result.msg);
-                    console.log("Fail to overwrite config with server config.")
-                }
-            });
+             // Async: Upload an empty data to fetch config from server
+             this._fetchConfigFromServer().then( result => {
+                 if (result.status == 1) {
+                     if (this.config.update(result.config)) {
+                         this._resetCollector();
+                         this.uploader.setConfig(this.config);
+                         console.log("Config updated.")
+                     } else {
+                        throw new Error(`Unable to update config with server config.`);
+                     }
+                 } else {
+                     throw new Error(`Fail to get config from server.`);
+                 }
+             }).catch(err => {
+                 console.log(err);
+             });
             window.onbeforeunload = (evt) => {
                 if (this.eventsList.length != 0) {
                     this._uploadTrace();
                 }
             }
-            return {status: 0, msg: `Invalid configuration.`};
+            return {status: 0};
         } else {
             return {status: -1, msg: `Invalid configuration.`};
         }

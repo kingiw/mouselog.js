@@ -53,7 +53,7 @@ class Config {
                 }
             })
 
-            config.absoluteUrl = this._formatUrl();
+            this.absoluteUrl = this._formatUrl();
         } catch(err) {
             console.log(err);
             return false;
