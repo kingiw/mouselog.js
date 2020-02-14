@@ -24,6 +24,7 @@ class Mouselog{
         this.mouselogLoadTime = new Date();
         this.uploader = new Uploader();
         this.eventsList = [];
+        this.eventsCount = 0;
         this.uploadInterval; // For "periodic" upload mode
         this.uploadTimeout; // For "mixed" upload mode
     }
@@ -41,8 +42,6 @@ class Mouselog{
             width: document.body.scrollWidth,
             height: document.body.scrollHeight,
             pageLoadTime: pageLoadTime,
-            label: -1,
-            guess: -1,
             events: []
         }
         this.uploadIdx += 1;
@@ -61,8 +60,7 @@ class Mouselog{
             y = evt.changedTouches[0].pageY;
         }
         let tmpEvt = {
-            // TODO: Is `id` be used to order the event by timestamp?
-            id: this.eventsList.length, 
+            id: this.eventsCount, 
             timestamp: getRelativeTimestampInSeconds(),
             type: evt.type,
             x: x,
@@ -70,11 +68,13 @@ class Mouselog{
             button: getButton(evt.button)
         }
 
+
         if (evt.type == "wheel") {
             tmpEvt.deltaX = evt.deltaX;
             tmpEvt.deltaY = evt.deltaY;
         }
         this.eventsList.push(tmpEvt);
+        this.eventsCount += 1;
 
         if ( this.config.uploadMode == "event-triggered" && this.eventsList.length % this.config.frequency == 0 ) {
             this._uploadTrace();
