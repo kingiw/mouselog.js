@@ -7,15 +7,16 @@ let StatusEnum = {
 }
 
 class Uploader {
-    constructor() {
+    constructor(impressionId, config) {
+        this.impressionId = impressionId;
+        this.config = config;
         this.resendQueue = [];
     }
 
-    start(impressionId) {
-        this.impressionId = impressionId;
+    start() {
         this.resendInterval = setInterval(()=>{
             this._resendFailedData.call(this);
-        }, config.resendInterval);
+        }, this.config.resendInterval);
     }
 
     stop() {
@@ -24,7 +25,7 @@ class Uploader {
     }
 
     upload(data) {
-        // resolve(true/false): uploaded success/fail.
+        // resolve({status:-1/0/1, ...}): uploading success/fail.
         // reject(ErrorMessage): Errors occur when updating the config.
         return new Promise( (resolve, reject) => {
             let encodedData = JSON.stringify(data);
@@ -35,9 +36,11 @@ class Uploader {
                             throw new Error("Response object status is not ok.");
                         }
                         if (resObj.msg == "config") {
-                           if (!updateConfig(resObj.data)) {
-                               resolve({status: -1, msg: `Data is uploaded, but errors occur when updating config.`});
-                           };
+                            resolve({
+                                status: 1, 
+                                msg: `Get config from server`, 
+                                config: resObj.data
+                            });
                         }
                         resolve({status: 0});
                     });
@@ -46,13 +49,22 @@ class Uploader {
                 }
             }).catch(err => {
                 this._appendFailedData(data);
-                resolve({status: -1, msg: `Fail to upload a bunch of data: ${err.message}`});
+                resolve({
+                    status: -1, 
+                    msg: `Fail to upload a bunch of data, ${err.message}`
+                });
             })
         });
     }
 
     setImpressionId(impId) {
         this.impressionId = impId;
+    }
+
+    setConfig(config) {
+        this.stop();
+        this.config = config;
+        this.start();
     }
 
     _resendFailedData() {
@@ -78,13 +90,13 @@ class Uploader {
     }
 
     _upload(encodedData) {
-        if (config.enableGet) {
-            return fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
+        if (this.config.enableGet) {
+            return fetch(`${this.config.absoluteUrl}/api/upload-trace?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
                 method: "GET", 
                 credentials: "include"
             });
         } else {
-            return fetch(`${config.absoluteUrl}/api/upload-trace?websiteId=${config.websiteId}&impressionId=${this.impressionId}`, {
+            return fetch(`${this.config.absoluteUrl}/api/upload-trace?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}`, {
                 method: "POST",
                 credentials: "include",
                 body: encodedData

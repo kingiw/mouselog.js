@@ -1,87 +1,89 @@
+class Config {
+    // Set up a default config
+    constructor() {
+        // Type: string, REQUIRED
+        // Endpoint Url
+        this.uploadEndpoint = "http://localhost:9000";
 
+        // Type: string
+        // Website ID
+        this.websiteId = "unknown";
 
-// Default config
-let config = {
-    // Type: string, REQUIRED
-    // Endpoint Url
-    uploadEndpoint: "http://localhost:9000",
+        // Endpoint type, "absolute" or "relative"
+        this.endpointType = "absolute";
 
-    // Type: string
-    // Website ID
-    websiteId: "unknown",
+        // Upload mode, "mixed", "periodic" or "event-triggered"
+        this.uploadMode = "mixed";
 
-    // Endpoint type, "absolute" or "relative"
-    endpointType: "absolute",
+        // Type: number
+        // If `uploadMode` is "mixed", "periodic", data will be uploaded every `uploadPeriod` ms.
+        // If no data are collected in a period, no data will be uploaded
+        this.uploadPeriod = 5000;
 
-    // Upload mode, "mixed", "periodic" or "event-triggered"
-    uploadMode: "mixed",
+        // Type: number
+        // If `uploadMode` == "event-triggered"
+        // The website interaction data will be uploaded when every `frequency` events are captured.
+        this.frequency = 50;
 
-    // Type: number
-    // If `uploadMode` is "mixed", "periodic", data will be uploaded every `uploadPeriod` ms.
-    // If no data are collected in a period, no data will be uploaded
-    uploadPeriod: 5000,
+        // Type: bool
+        // Use GET method to upload data? (stringified data will be embedded in URI)
+        this.enableGet = false;
 
-    // Type: number
-    // If `uploadMode` == "event-triggered"
-    // The website interaction data will be uploaded when every `frequency` events are captured.
-    frequency: 50,
+        // Type: number
+        // Time interval for resending the failed trace data
+        this.resendInterval = 3000;
 
-    // Type: bool
-    // Use GET method to upload data? (stringified data will be embedded in URI)
-    enableGet: false, 
+        this._requiredParams = [
+            "uploadEndpoint",
+        ]
+    }
 
-    // Type: number
-    // Time interval for resending the failed trace data
-    resendInterval: 3000, 
-}
+    build(config) {
+        try {
+            this._requiredParams.forEach(key => {
+                if (!config.hasOwnProperty(key)) {
+                    throw new Error(`Param ${key} is required but not declared.`);
+                }
+            });
+            // Overwrite the default config
+            Object.keys(config).forEach( key => {
+                // Overwriting Class private members / function method is not allowed
+                if (this[key] && !key.startsWith("_") && typeof(this[key]) != "function") {
+                    this[key] = config[key]
+                }
+            })
 
-// ----------------------------
+            this.absoluteUrl = this._formatUrl();
+        } catch(err) {
+            console.log(err);
+            return false;
+        }
+        return true;
+    }
 
-let requiredParams = [
-    "uploadEndpoint",
-];
+    update(config) {
+        return this.build(config);
+    }
 
-// Returns a boolean indicating if config is built successfully
-let buildConfig = (params) => {
-    try {
-        requiredParams.forEach(key => {
-            if (!(params.hasOwnProperty(key))) {
-                throw new Error(`Param ${key} is required but not declared.`);
+    _formatUrl() {
+        let url = this.uploadEndpoint;
+        if (this.endpointType == "relative") {
+            if (url.startsWith("./")) {
+                url = url.slice(1);
+            } else if (url[0] !== "/") { 
+                url = "/" + url;
             }
-        });
-        config = Object.assign(config, params);
-        config.absoluteUrl = formatUrl();
-    } catch(err) {
-        console.log(err);
-        return false;
-    }
-    return true;
-}
-
-let updateConfig = (params) => {
-    // Generate new config
-    return buildConfig(params);
-}
-
-let formatUrl = () => {
-    let url = config.uploadEndpoint
-    if (config.endpointType == "relative") {
-        // Format the head (the path should start with '/')
-        if (url.startsWith("./")) {
-            url = url.slice(1);
-        } else if (url[0] !== "/") { 
-            url = "/" + url;
+            // Format the tail
+            if (url[url.length-1] === "/") {
+                url = url.slice(0, url.length-1);
+            }
+            // Construct absolute URL
+            url = `${window.location.origin}${url}`
+        } else if (this.endpointType !== "absolute") {
+            throw new Error('`endpointType` can only be "absolute" or "relative"');
         }
-        // Format the tail
-        if (url[url.length-1] === "/") {
-            url = url.slice(0, url.length-1);
-        }
-        // Construct absolute URL
-        url = `${window.location.origin}${url}`
-    } else if (config.endpointType !== "absolute") {
-        throw new Error('`endpointType` can only be "absolute" or "relative"');
+        return url;
     }
-    return url;
 }
 
-module.exports = { config, buildConfig, updateConfig }
+module.exports = { Config };

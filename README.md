@@ -12,7 +12,8 @@ Embed Mouselog in your HTML files:
 ```html
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mouselog@latest/build/mouselog.js"></script>
 <script>
-    mouselog.run({
+    var agent = new mouselog.Mouselog();
+    agent.run({
         uploadEndpoint: "Your_Server_Url",
         websiteId: "Your_Website_Id",
         endpointType: "absolute"
@@ -25,7 +26,8 @@ You can also include mouselog dynamically in Javascript:
     var script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/npm/mouselog@latest/build/mouselog.js";
     script.onload = () => {
-        mouselog.run({
+        var agent = new mouselog.Mouselog();
+        agent.run({
             uploadEndpoint: "Your_Server_Url",
             websiteId: "Your_Website_Id",
             endpointType: "absolute"
@@ -52,14 +54,15 @@ npm i mouselog --save
 
 Then run Mouselog and it will automatically collect all you want.
 ```Javascript
-const mouselog = require('mouselog');
-mouselog.run({
+const { Mouselog } = require('mouselog');
+let agent = new Mouselog();
+agent.run({
     uploadEndpoint: "Your_Server_Url",
     websiteId: "Your_Website_Id",
     endpointType: "absolute"
 });
 ```
-You can also deactivate Mouselog by calling `mouselog.stop()`.
+You can also deactivate Mouselog by calling `agent.stop()`.
 
 
 # Configuration
