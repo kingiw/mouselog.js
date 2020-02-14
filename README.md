@@ -99,7 +99,11 @@ The default configuration:
 
     // Type: bool
     // Use GET method to upload data? (stringified data will be embedded in URI)
-    enableGet: false
+    enableGet: false,
+
+    // Type: HTML DOM Element
+    // Agent only listens and captures events in `config.scope`
+    scope: window.document
 }
 ```
 
