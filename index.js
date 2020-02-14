@@ -119,7 +119,7 @@ class Mouselog{
 
     _runCollector() {
         targetEvents.forEach( s => {
-            window.document.addEventListener(s, (evt) => this._mouseHandler(evt));
+            this.config.scope.addEventListener(s, (evt) => this._mouseHandler(evt));
         });
 
         if (this.config.uploadMode === "periodic") {
@@ -133,7 +133,7 @@ class Mouselog{
 
     _stopCollector() {
         targetEvents.forEach( s => {
-            window.document.removeEventListener(s, (evt) => this._mouseHandler(evt));
+            this.config.scope.removeEventListener(s, (evt) => this._mouseHandler(evt));
         });
         clearInterval(this.uploadInterval);
         clearTimeout(this.uploadTimeout);
