@@ -33,12 +33,22 @@ class Config {
         // Time interval for resending the failed trace data
         this.resendInterval = 3000;
 
+        // Type: HTML DOM Element
+        // Capture the events occur in `this.scope`
+        this.scope = window.document;
+
+        // These parameters are required for runing a Mouselog agent
         this._requiredParams = [
             "uploadEndpoint",
         ]
+
+        // These parameters will be ignored when updating config
+        this._ignoredParams = [
+            "scope",
+        ]
     }
 
-    build(config) {
+    build(config, isUpdating = false) {
         try {
             this._requiredParams.forEach(key => {
                 if (!config.hasOwnProperty(key)) {
@@ -49,10 +59,12 @@ class Config {
             Object.keys(config).forEach( key => {
                 // Overwriting Class private members / function method is not allowed
                 if (this[key] && !key.startsWith("_") && typeof(this[key]) != "function") {
-                    this[key] = config[key]
+                    // Do not update some `ignored` parameter
+                    if (isUpdating && !(key in this._ignoredParams)) {
+                        this[key] = config[key]
+                    }
                 }
             })
-
             this.absoluteUrl = this._formatUrl();
         } catch(err) {
             console.log(err);
@@ -62,7 +74,7 @@ class Config {
     }
 
     update(config) {
-        return this.build(config);
+        return this.build(config, true);
     }
 
     _formatUrl() {
