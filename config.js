@@ -60,7 +60,7 @@ class Config {
                 // Overwriting Class private members / function method is not allowed
                 if (this[key] && !key.startsWith("_") && typeof(this[key]) != "function") {
                     // Do not update some `ignored` parameter
-                    if (isUpdating && !(key in this._ignoredParams)) {
+                    if (!(isUpdating && key in this._ignoredParams)) {
                         this[key] = config[key]
                     }
                 }
