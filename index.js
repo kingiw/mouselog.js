@@ -16,6 +16,26 @@ let targetEvents = [
 ];
 let pageLoadTime = new Date();
 
+function maxNumber(...nums) {
+    let res = nums[0];
+    for (let i = 1; i < nums.length; ++i) {
+        res = res > nums[i] ? res : nums[i];
+    }
+    return res;
+}
+
+function getRelativeTimestampInSeconds() {
+    let diff = new Date() - pageLoadTime;
+    return Math.trunc(diff) / 1000;
+}
+
+function getButton(btn) {
+    if (btn === '2') {
+        return 'Right';
+    } else {
+        return ""
+    }
+}
 
 class Mouselog{
     constructor() {
@@ -39,8 +59,8 @@ class Mouselog{
             idx: this.uploadIdx,
             url: window.location.hostname ? window.location.hostname : "localhost",
             path: window.location.pathname,
-            width: document.body.scrollWidth,
-            height: document.body.scrollHeight,
+            width: maxNumber(document.body.scrollWidth, window.innerWidth),
+            height: maxNumber(document.body.scrollHeight, window.innerHeight),
             pageLoadTime: pageLoadTime,
             events: []
         }
@@ -195,19 +215,6 @@ class Mouselog{
         this._stopCollector();
         this._clearBuffer();
         console.log(`Mouselog agent ${this.impressionId} is stopped!`);
-    }
-}
-
-function getRelativeTimestampInSeconds() {
-    let diff = new Date() - pageLoadTime;
-    return Math.trunc(diff) / 1000;
-}
-
-function getButton(btn) {
-    if (btn === '2') {
-        return 'Right';
-    } else {
-        return ""
     }
 }
 
