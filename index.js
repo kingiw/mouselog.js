@@ -16,6 +16,12 @@ let targetEvents = [
 ];
 let pageLoadTime = new Date();
 
+let hiddenProperty = 'hidden' in document ? 'hidden' :
+    'webkitHidden' in document ? 'webkitHidden' :
+    'mozHidden' in document ? 'mozHidden' :
+    null;
+let visibilityChangeEvent = hiddenProperty ? hiddenProperty.replace(/hidden/i, 'visibilitychange') : null;
+
 function maxNumber(...nums) {
     let res = nums[0];
     for (let i = 1; i < nums.length; ++i) {
@@ -67,7 +73,15 @@ class Mouselog{
         this.uploadIdx += 1;
         return trace;
     }
-
+    _onVisibilityChange(evt) {
+        if (window.document[hiddenProperty]) {
+            // the page is not activated
+            this._pause();
+        } else {
+            // the page is activated
+            this._resume();
+        }
+    }
     _mouseHandler(evt) {
         // PC's Chrome on Mobile mode can still receive "contextmenu" event with zero X, Y, so we ignore these events.
         if (evt.type === 'contextmenu' && evt.pageX === 0 && evt.pageY === 0) {
@@ -87,7 +101,6 @@ class Mouselog{
             y: y,
             button: getButton(evt.button)
         }
-
 
         if (evt.type == "wheel") {
             tmpEvt.deltaX = evt.deltaX;
@@ -198,9 +211,20 @@ class Mouselog{
         }
     }
 
+    _pause() {
+        this._stopCollector();
+    }
+
+    _resume() {
+        this._runCollector();
+    }
+
     run(config) {
         let res = this._init(config);
         if (res.status == 0) {
+            if (visibilityChangeEvent) {
+                document.addEventListener(visibilityChangeEvent, (evt)=>this._onVisibilityChange(evt));
+            }
             this._runCollector();
             this.uploader.start(this.impressionId);
             console.log("Mouselog agent is activated!");
