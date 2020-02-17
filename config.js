@@ -1,3 +1,4 @@
+const urljoin = require('url-join');
 class Config {
     // Set up a default config
     constructor() {
@@ -65,7 +66,7 @@ class Config {
                     }
                 }
             })
-            this.absoluteUrl = this._formatUrl();
+            this._formatUrl();
         } catch(err) {
             console.log(err);
             return false;
@@ -78,23 +79,13 @@ class Config {
     }
 
     _formatUrl() {
-        let url = this.uploadEndpoint;
         if (this.endpointType == "relative") {
-            if (url.startsWith("./")) {
-                url = url.slice(1);
-            } else if (url[0] !== "/") { 
-                url = "/" + url;
-            }
-            // Format the tail
-            if (url[url.length-1] === "/") {
-                url = url.slice(0, url.length-1);
-            }
-            // Construct absolute URL
-            url = `${window.location.origin}${url}`
-        } else if (this.endpointType !== "absolute") {
+            this.absoluteUrl = urljoin(window.location.origin, this.uploadEndpoint);
+        } else if (this.endpointType == "absolute") {
+            this.absoluteUrl = this.uploadEndpoint;
+        } else {
             throw new Error('`endpointType` can only be "absolute" or "relative"');
         }
-        return url;
     }
 }
 
