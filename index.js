@@ -105,7 +105,7 @@ class Mouselog{
             if (this.eventsList.length > 0) {
                 this._uploadTrace();
             }
-        })
+        }, this.config.uploadPeriod);
     }
 
     _periodUploadInterval() {
