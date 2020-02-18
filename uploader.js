@@ -1,3 +1,4 @@
+let urljoin = require('url-join');
 let {config, updateConfig} = require('./config');
 
 let StatusEnum = {
@@ -90,13 +91,18 @@ class Uploader {
     }
 
     _upload(encodedData) {
+        let url = urljoin(
+            this.config.absoluteUrl, 
+            '/api/upload-trace', 
+            `?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}`, 
+        );
         if (this.config.enableGet) {
-            return fetch(`${this.config.absoluteUrl}/api/upload-trace?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}&data=${encodedData}`, {
+            return fetch(`${url}&data=${encodedData}`, {
                 method: "GET", 
                 credentials: "include"
             });
         } else {
-            return fetch(`${this.config.absoluteUrl}/api/upload-trace?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}`, {
+            return fetch(url, {
                 method: "POST",
                 credentials: "include",
                 body: encodedData
