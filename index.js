@@ -1,6 +1,7 @@
 const uuidv4 = require('uuid/v4');
 const Uploader = require('./uploader');
 let { Config } = require('./config');
+const debug = require('./debugger');
 
 let targetEvents = [
     "mousemove",
@@ -190,15 +191,15 @@ class Mouselog{
                      if (this.config.update(result.config)) {
                          this._resetCollector();
                          this.uploader.setConfig(this.config);
-                         console.log("Config updated.")
+                         debug.write("Successfully update config from backend.");
                      } else {
                         throw new Error(`Unable to update config with server config.`);
                      }
                  } else {
-                     throw new Error(`Fail to get config from server.`);
+                    throw new Error(`Fail to get config from server.`);
                  }
              }).catch(err => {
-                 console.log(err);
+                 debug.write(err);
              });
             window.onbeforeunload = (evt) => {
                 if (this.eventsList.length != 0) {
@@ -227,18 +228,23 @@ class Mouselog{
             }
             this._runCollector();
             this.uploader.start(this.impressionId);
-            console.log("Mouselog agent is activated!");
+            debug.write("Mouselog agent is activated!");
         } else {
-            console.log(res.msg);
-            console.log("Fail to initialize Mouselog agent.");
+            debug.write(res.msg);
+            debug.write("Fail to initialize Mouselog agent.");
         }
+    }
+
+    debug(config, debugOutputElementId) {
+        debug.activate(debugOutputElementId);
+        this.run(config);
     }
 
     stop() {
         this.uploader.stop();
         this._stopCollector();
         this._clearBuffer();
-        console.log(`Mouselog agent ${this.impressionId} is stopped!`);
+        debug.write(`Mouselog agent ${this.impressionId} is stopped!`);
     }
 }
 

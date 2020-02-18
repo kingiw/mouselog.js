@@ -1,4 +1,5 @@
 const urljoin = require('url-join');
+const debug = require('./debugger');
 class Config {
     // Set up a default config
     constructor() {
@@ -68,7 +69,7 @@ class Config {
             })
             this._formatUrl();
         } catch(err) {
-            console.log(err);
+            debug.write(err);
             return false;
         }
         return true;
