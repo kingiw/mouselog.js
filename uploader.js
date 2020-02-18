@@ -1,5 +1,4 @@
 let urljoin = require('url-join');
-let {config, updateConfig} = require('./config');
 const debug = require('./debugger');
 
 let StatusEnum = {
@@ -35,11 +34,11 @@ class Uploader {
             this._upload(encodedData).then(res => {
                 if (res.status == 200) {
                     res.json().then( resObj => {
+                        debug.write(`Pkg ${data.idx} response=${JSON.stringify(resObj)}`);
                         if (resObj.status !== "ok") {
                             throw new Error("Response object status is not ok.");
                         }
                         if (resObj.msg == "config") {
-                            debug.write(`Pkg ${data.idx} success.`)
                             resolve({
                                 status: 1, 
                                 msg: `Get config from server`, 
@@ -74,13 +73,16 @@ class Uploader {
 
     _resendFailedData() {
         let i = 0;
-        debug.write("Resending data...");
+        if (this.resendQueue.length > 0) {
+            debug.write("Resending data...");
+        }
         while (i < this.resendQueue.length) {
             let obj = this.resendQueue[i];
             if (obj.status == StatusEnum.SUCCESS) {
                 this.resendQueue.splice(i, 1);  // Remove it from resendQueue
             } else {
                 i += 1;
+                debug.write(`Resending Pkg ${obj.data.idx}`);
                 if (obj.status == StatusEnum.WAITING) {
                     obj.status = StatusEnum.SENDING;
                     this.upload(obj.data).then( result => {
