@@ -1,3 +1,4 @@
+import 'babel-polyfill'
 const uuidv4 = require('uuid/v4');
 const Uploader = require('./uploader');
 let { Config } = require('./config');
