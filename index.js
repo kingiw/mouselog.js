@@ -229,6 +229,10 @@ class Mouselog{
             this._runCollector();
             this.uploader.start(this.impressionId);
             debug.write("Mouselog agent is activated!");
+            debug.write(`Website ID: ${this.config.websiteId}`);
+            debug.write(`Impression ID: ${this.impressionId}`);
+            debug.write(`User-Agent: ${navigator.userAgent}`);
+            debug.write(`Page load time: ${pageLoadTime}`);
         } else {
             debug.write(res.msg);
             debug.write("Fail to initialize Mouselog agent.");
