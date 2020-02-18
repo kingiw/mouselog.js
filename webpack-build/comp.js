@@ -1,9 +1,8 @@
 // Configuration of generating compressed `mouselog.min.js`
 const path = require("path");
-
 module.exports = {
     mode: "production",
-    entry: "../index.js",
+    entry: "../src/index.js",
     output: {
         filename: "mouselog.min.js",
         path: path.resolve(__dirname, "../build"),
@@ -11,7 +10,24 @@ module.exports = {
         library: "mouselog"
     },
     optimization: {
-        minimize: true,
+        minimize: true
     },
-    target: "web"
+    target: "web",
+    module: {
+        rules: [
+            {
+                test: /\.js$/,
+                include: [
+                    path.resolve(__dirname, '../src')
+                ],
+                exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env']
+                    }
+                }
+            }
+        ]
+    }
 }
