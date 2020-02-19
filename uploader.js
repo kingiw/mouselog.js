@@ -33,23 +33,23 @@ class Uploader {
             debug.write(`Uploading Pkg ${data.idx}, window size: ${data.width}*${data.height}, events count: ${data.events.length}`)
             this._upload(encodedData).then(res => {
                 if (res.status == 200) {
-                    res.json().then( resObj => {
-                        debug.write(`Pkg ${data.idx} response=${JSON.stringify(resObj)}`);
-                        if (resObj.status !== "ok") {
-                            throw new Error("Response object status is not ok.");
-                        }
-                        if (resObj.msg == "config") {
-                            resolve({
-                                status: 1, 
-                                msg: `Get config from server`, 
-                                config: resObj.data
-                            });
-                        }
-                        resolve({status: 0});
-                    });
+                    return res.json();
                 } else {
                     throw new Error("Response status code is not 200.");
                 }
+            }).then(resObj => {
+                debug.write(`Pkg ${data.idx} response=${JSON.stringify(resObj)}`);
+                if (resObj.status !== "ok") {
+                    throw new Error("Response object status is not ok.");
+                }
+                if (resObj.msg == "config") {
+                    resolve({
+                        status: 1, 
+                        msg: `Get config from server`, 
+                        config: resObj.data
+                    });
+                }
+                resolve({status: 0});
             }).catch(err => {
                 debug.write(`Pkg ${data.idx} failed, wait for resending. Error message: ${err.message}`);
                 this._appendFailedData(data);
@@ -57,7 +57,7 @@ class Uploader {
                     status: -1, 
                     msg: `Fail to upload data bunch #${data.idx}, ${err.message}`
                 });
-            })
+            });
         });
     }
 
