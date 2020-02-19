@@ -31,6 +31,8 @@ class Uploader {
         return new Promise( (resolve, reject) => {
             let encodedData = JSON.stringify(data);
             debug.write(`Uploading Pkg ${data.idx}, window size: ${data.width}*${data.height}, events count: ${data.events.length}`)
+            for (let i = 0; i < 3 && i < data.events.length; ++i)
+                debug.write(`    ${JSON.stringify(data.events[i])}`);
             this._upload(encodedData).then(res => {
                 if (res.status == 200) {
                     return res.json();

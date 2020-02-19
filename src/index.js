@@ -44,6 +44,11 @@ function getButton(btn) {
     }
 }
 
+function parseInt(x) {
+    let res = typeof(x) === 'number' ? x : Number(x);
+    return Math.round(res);
+}
+
 class Mouselog{
     constructor() {
         this.config = new Config();
@@ -91,8 +96,8 @@ class Mouselog{
         let x = evt.pageX;
         let y = evt.pageY;
         if (x === undefined) {
-            x = evt.changedTouches[0].pageX;
-            y = evt.changedTouches[0].pageY;
+            x = parseInt(evt.changedTouches[0].pageX);
+            y = parseInt(evt.changedTouches[0].pageY);
         }
         let tmpEvt = {
             id: this.eventsCount, 
