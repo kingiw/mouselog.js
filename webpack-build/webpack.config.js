@@ -24,7 +24,14 @@ module.exports = {
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['@babel/preset-env']
+                        presets: [
+                            ["@babel/env", {
+                                // Must declare "modules":"commonjs" if CommonJS styles import/export are used
+                                // https://github.com/webpack/webpack/issues/4039
+                                "modules": "commonjs"
+                            }]
+                        ],
+                        plugins: ["@babel/plugin-transform-runtime"]
                     }
                 }
             }
