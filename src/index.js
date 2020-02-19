@@ -33,7 +33,7 @@ function maxNumber(...nums) {
 
 function getRelativeTimestampInSeconds() {
     let diff = new Date() - pageLoadTime;
-    return Math.trunc(diff) / 1000;
+    return Math.floor(diff) / 1000;
 }
 
 function getButton(btn) {
@@ -93,9 +93,13 @@ class Mouselog{
         if (evt.type === 'contextmenu' && evt.pageX === 0 && evt.pageY === 0) {
             return;
         }
-        let x = evt.pageX;
-        let y = evt.pageY;
+
+        // In IE, evt.pageX/Y is float
+        let x = parseInt(evt.pageX);
+        let y = parseInt(evt.pageY);
+
         if (x === undefined) {
+            // evt.changedTouches[0].pageX/Y is floats
             x = parseInt(evt.changedTouches[0].pageX);
             y = parseInt(evt.changedTouches[0].pageY);
         }

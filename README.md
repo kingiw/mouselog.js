@@ -25,7 +25,7 @@ You can also include mouselog dynamically in Javascript:
 (function() {
     var script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/npm/mouselog@latest/build/mouselog.js";
-    script.onload = () => {
+    script.onload = function() {
         var agent = new mouselog.Mouselog();
         agent.run({
             uploadEndpoint: "Your_Server_Url",
@@ -38,6 +38,10 @@ You can also include mouselog dynamically in Javascript:
     s.appendChild(script, s);
 })();
 ```
+
+###
+To achieve high compatability for IE9, you should refer to [promise-polyfill](https://github.com/taylorhakes/promise-polyfill) before refering Mouselog agent.
+
 ## Build Manually
 You can also bundle Mouselog.js manually via
 ```
