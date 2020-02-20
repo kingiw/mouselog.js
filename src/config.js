@@ -1,5 +1,6 @@
-const urljoin = require('url-join');
-const debug = require('./debugger');
+import urljoin from 'url-join';
+import * as debug from './debugger';
+
 class Config {
     // Set up a default config
     constructor() {
@@ -42,18 +43,18 @@ class Config {
         // These parameters are required for runing a Mouselog agent
         this._requiredParams = [
             "uploadEndpoint",
-        ]
+        ];
 
         // These parameters will be ignored when updating config
         this._ignoredParams = [
             "scope",
-        ]
+        ];
     }
 
     build(config, isUpdating = false) {
         try {
             this._requiredParams.forEach(key => {
-                if (!config.hasOwnProperty(key)) {
+                if (!Object.prototype.hasOwnProperty.call(config, key)) {
                     throw new Error(`Param ${key} is required but not declared.`);
                 }
             });
@@ -63,10 +64,10 @@ class Config {
                 if (this[key] && !key.startsWith("_") && typeof(this[key]) != "function") {
                     // Do not update some `ignored` parameter
                     if (!(isUpdating && key in this._ignoredParams)) {
-                        this[key] = config[key]
+                        this[key] = config[key];
                     }
                 }
-            })
+            });
             this._formatUrl();
         } catch(err) {
             debug.write(err);
@@ -83,11 +84,10 @@ class Config {
         if (this.endpointType == "relative") {
             this.absoluteUrl = urljoin(window.location.origin, this.uploadEndpoint);
         } else if (this.endpointType == "absolute") {
-            this.absoluteUrl = this.uploadEndpoint;
+            this.absoluteUrl = urljoin(this.uploadEndpoint, "/api/upload-trace");
         } else {
             throw new Error('`endpointType` can only be "absolute" or "relative"');
         }
     }
 }
-
-module.exports = { Config };
+export default Config;
