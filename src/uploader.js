@@ -101,8 +101,7 @@ class Uploader {
 
     _upload(encodedData) {
         let url = urljoin(
-            this.config.absoluteUrl, 
-            '/api/upload-trace', 
+            this.config.absoluteUrl,
             `?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}`, 
         );
         if (this.config.enableGet) {
