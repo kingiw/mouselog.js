@@ -114,3 +114,6 @@ package-lock.json
 #release
 mouselog.js
 mouselog.min.js
+
+# npm release
+lib/

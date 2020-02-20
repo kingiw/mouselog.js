@@ -110,3 +110,6 @@ dist
 package-lock.json
 
 webpack-build/
+
+# Source code
+src/
