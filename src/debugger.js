@@ -26,4 +26,4 @@ function write(info) {
     }
 }
 
-module.exports = {activate, write};
+export { activate, write };

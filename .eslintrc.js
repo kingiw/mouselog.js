@@ -1,19 +1,15 @@
 module.exports = {
     env: {
-        browser: true,
-        es6: true
+        "browser": true,
+        // "commonjs": true,
+        "es6": true,
     },
-    extends: "eslint:recommended", 
-    globals: {
-        "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
-    },
+    extends: "eslint:recommended",
     parserOptions: {
-        "ecmaVersion": 2018,
         "sourceType": "module"
     },
     rules: { 
         'indent': [0, 4],
-        'semi': [1, 'always'],
+        'semi': ['warn', 'always'],
     }
 };

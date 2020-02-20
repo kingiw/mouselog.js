@@ -26,11 +26,11 @@ module.exports = {
                     loader: 'babel-loader',
                     options: {
                         presets: [
-                            ["@babel/preset-env", {
+                            ["@babel/preset-env"/*, {
                                 // Must declare "modules":"commonjs" if CommonJS styles import/export are used
                                 // https://github.com/webpack/webpack/issues/4039
                                 "modules": "commonjs"
-                            }]
+                            }*/]
                         ],
                         // Polyfill for IE: starts-with-ends-with
                         plugins: ["@babel/plugin-transform-runtime", "starts-with-ends-with"]

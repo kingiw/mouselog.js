@@ -1,7 +1,7 @@
-const uuidv4 = require('uuid/v4');
-const Uploader = require('./uploader');
-let { Config } = require('./config');
-const debug = require('./debugger');
+import uuid from "uuid/v4";
+import Uploader from './uploader';
+import Config from './config';
+import * as debug from './debugger';
 
 let targetEvents = [
     "mousemove",
@@ -40,7 +40,7 @@ function getButton(btn) {
     if (btn === '2') {
         return 'Right';
     } else {
-        return ""
+        return "";
     }
 }
 
@@ -51,8 +51,8 @@ function parseInt(x) {
 
 class Mouselog{
     constructor() {
+        this.impressionId = uuid();
         this.config = new Config();
-        this.impressionId = uuidv4();
         this.mouselogLoadTime = new Date();
         this.uploader = new Uploader();
         this.eventsList = [];
@@ -75,11 +75,11 @@ class Mouselog{
             height: maxNumber(document.body.scrollHeight, window.innerHeight),
             pageLoadTime: pageLoadTime,
             events: []
-        }
+        };
         this.uploadIdx += 1;
         return trace;
     }
-    _onVisibilityChange(evt) {
+    _onVisibilityChange() {
         if (window.document[hiddenProperty]) {
             // the page is not activated
             this._pause();
@@ -110,7 +110,7 @@ class Mouselog{
             x: x,
             y: y,
             button: getButton(evt.button)
-        }
+        };
 
         if (evt.type == "wheel") {
             tmpEvt.deltaX = evt.deltaX;
@@ -188,7 +188,6 @@ class Mouselog{
     }
 
     _init(config) {
-        this.impressionId = uuidv4();
         this._clearBuffer();
         this.uploadIdx = 0;
         this.uploader = new Uploader(this.impressionId, this.config);
@@ -210,11 +209,11 @@ class Mouselog{
              }).catch(err => {
                  debug.write(err);
              });
-            window.onbeforeunload = (evt) => {
+            window.onbeforeunload = () => {
                 if (this.eventsList.length != 0) {
                     this._uploadTrace();
                 }
-            }
+            };
             return {status: 0};
         } else {
             return {status: -1, msg: `Invalid configuration.`};
@@ -261,4 +260,4 @@ class Mouselog{
     }
 }
 
-module.exports = { Mouselog };
+export { Mouselog };

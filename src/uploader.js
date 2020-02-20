@@ -1,11 +1,11 @@
-let urljoin = require('url-join');
-const debug = require('./debugger');
+import urljoin from 'url-join';
+import * as debug from './debugger';
 
 let StatusEnum = {
     WAITING: 0,
     SENDING: 1,
     SUCCESS: 2,
-}
+};
 
 class Uploader {
     constructor(impressionId, config) {
@@ -28,9 +28,9 @@ class Uploader {
     upload(data) {
         // resolve({status:-1/0/1, ...}): uploading success/fail.
         // reject(ErrorMessage): Errors occur when updating the config.
-        return new Promise( (resolve, reject) => {
+        return new Promise( (resolve) => {
             let encodedData = JSON.stringify(data);
-            debug.write(`Uploading Pkg ${data.idx}, window size: ${data.width}*${data.height}, events count: ${data.events.length}`)
+            debug.write(`Uploading Pkg ${data.idx}, window size: ${data.width}*${data.height}, events count: ${data.events.length}`);
             for (let i = 0; i < 3 && i < data.events.length; ++i)
                 debug.write(`    ${JSON.stringify(data.events[i])}`);
             this._upload(encodedData).then(res => {
@@ -128,4 +128,4 @@ class Uploader {
     
 }
 
-module.exports = Uploader;
+export default Uploader;
