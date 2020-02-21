@@ -75,8 +75,8 @@ The default configuration:
 ```js
 {
     // Type: string
-    // Endpoint Url
-    uploadEndpoint: REQUIRED,
+    // Endpoint Url, required
+    uploadEndpoint: "your_server_url",
 
     // Type: string
     // Website ID
@@ -100,6 +100,9 @@ The default configuration:
     // If `uploadMode` == "event-triggered"
     // The website interaction data will be uploaded when every `frequency` events are captured.
     frequency: 50,
+
+    // Maximum size of a single package
+    sizeLimit = 4096,
 
     // Type: bool
     // Use GET method to upload data? (stringified data will be embedded in URI)

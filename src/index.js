@@ -1,7 +1,9 @@
 import uuid from "uuid/v4";
 import Uploader from './uploader';
 import Config from './config';
+import dcopy from 'deep-copy';
 import * as debug from './debugger';
+import { parseInt, maxNumber, byteLength } from './utils';
 
 let targetEvents = [
     "mousemove",
@@ -23,14 +25,6 @@ let hiddenProperty = 'hidden' in document ? 'hidden' :
     null;
 let visibilityChangeEvent = hiddenProperty ? hiddenProperty.replace(/hidden/i, 'visibilitychange') : null;
 
-function maxNumber(...nums) {
-    let res = nums[0];
-    for (let i = 1; i < nums.length; ++i) {
-        res = res > nums[i] ? res : nums[i];
-    }
-    return res;
-}
-
 function getRelativeTimestampInSeconds() {
     let diff = new Date() - pageLoadTime;
     return Math.floor(diff) / 1000;
@@ -42,11 +36,6 @@ function getButton(btn) {
     } else {
         return "";
     }
-}
-
-function parseInt(x) {
-    let res = typeof(x) === 'number' ? x : Number(x);
-    return Math.round(res);
 }
 
 class Mouselog{
@@ -68,7 +57,7 @@ class Mouselog{
     _newTrace() {
         let trace = {
             id: '0',
-            idx: this.uploadIdx,
+            idx: 0,
             url: window.location.hostname ? window.location.hostname : "localhost",
             path: window.location.pathname,
             width: maxNumber(document.body.scrollWidth, window.innerWidth),
@@ -76,7 +65,6 @@ class Mouselog{
             pageLoadTime: pageLoadTime,
             events: []
         };
-        this.uploadIdx += 1;
         return trace;
     }
     _onVisibilityChange() {
@@ -129,17 +117,45 @@ class Mouselog{
         }
     }
 
+    _binarySplitBigDataBlock(dataBlock) {
+        let encodedData = JSON.stringify(dataBlock);
+        let res = [];
+        if ( byteLength(encodedData) >= this.config.sizeLimit ) {
+            let newDataBlock = dcopy(dataBlock);
+            dataBlock.events.splice(dataBlock.events.length / 2);
+            newDataBlock.events.splice(0, newDataBlock.events.length / 2);
+            this._binarySplitBigDataBlock(dataBlock).forEach(block => {
+                res.push(block);
+            });
+            this._binarySplitBigDataBlock(newDataBlock).forEach(block => {
+                res.push(block);
+            });
+            
+        } else {
+            res.push(dataBlock);
+        }
+        return res;
+    }
+
     _fetchConfigFromServer() {
         // Upload an empty trace to fetch config from server
         let trace = this._newTrace();
-        return this.uploader.upload(trace); // This is a promise
+        trace.uploadIdx = this.uploadIdx;
+        this.uploadIdx += 1;
+        return this.uploader.upload(trace, JSON.stringify(trace)); // This is a promise
     }
 
     _uploadTrace() {
         let trace = this._newTrace();
         trace.events = this.eventsList;
         this.eventsList = [];
-        return this.uploader.upload(trace); // This is a promise
+        let dataBlocks = this._binarySplitBigDataBlock(trace); // An array of data blocks
+        dataBlocks.forEach( dataBlock => {
+            dataBlock.uploadIdx = this.uploadIdx;
+            this.uploadIdx += 1;
+            let encodedData = JSON.stringify(dataBlock);
+            this.uploader.upload(dataBlock, encodedData); // This is a promise
+        });
     }
 
     _periodUploadTimeout() {

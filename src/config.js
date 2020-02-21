@@ -28,6 +28,9 @@ class Config {
         // The website interaction data will be uploaded when every `frequency` events are captured.
         this.frequency = 50;
 
+        // Maximum size of a single package
+        this.sizeLimit = 4096;
+
         // Type: bool
         // Use GET method to upload data? (stringified data will be embedded in URI)
         this.enableGet = false;
