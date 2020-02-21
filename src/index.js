@@ -1,6 +1,7 @@
 import uuid from "uuid/v4";
 import Uploader from './uploader';
 import Config from './config';
+import dcopy from 'deep-copy';
 import * as debug from './debugger';
 import { parseInt, maxNumber, byteLength } from './utils';
 
@@ -121,9 +122,9 @@ class Mouselog{
         let encodedData = JSON.stringify(dataBlock);
         let res = [];
         if ( byteLength(encodedData) >= this.config.sizeLimit ) {
-            let newDataBlock = Object.assign({}, dataBlock);
-            dataBlock.events.splice(0, dataBlock.events.length / 2);
-            newDataBlock.events.splice(newDataBlock.events.length / 2);
+            let newDataBlock = dcopy(dataBlock);
+            dataBlock.events.splice(dataBlock.events.length / 2);
+            newDataBlock.events.splice(0, newDataBlock.events.length / 2);
             this._binarySplitBigDataBlock(dataBlock).forEach(block => {
                 res.push(block);
             });
