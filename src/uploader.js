@@ -25,11 +25,10 @@ class Uploader {
         // TODO?: Send all the remaining data in this.buf
     }
 
-    upload(data) {
+    upload(data, encodedData) {
         // resolve({status:-1/0/1, ...}): uploading success/fail.
         // reject(ErrorMessage): Errors occur when updating the config.
         return new Promise( (resolve) => {
-            let encodedData = JSON.stringify(data);
             debug.write(`Uploading Pkg ${data.idx}, window size: ${data.width}*${data.height}, events count: ${data.events.length}`);
             for (let i = 0; i < 3 && i < data.events.length; ++i)
                 debug.write(`    ${JSON.stringify(data.events[i])}`);
@@ -102,7 +101,7 @@ class Uploader {
     _upload(encodedData) {
         let url = urljoin(
             this.config.absoluteUrl,
-            `?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}`, 
+            `?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}`
         );
         if (this.config.enableGet) {
             return fetch(`${url}&data=${encodedData}`, {
