@@ -57,7 +57,7 @@ class Mouselog{
     _newTrace() {
         let trace = {
             id: '0',
-            idx: this.uploadIdx,
+            idx: 0,
             url: window.location.hostname ? window.location.hostname : "localhost",
             path: window.location.pathname,
             width: maxNumber(document.body.scrollWidth, window.innerWidth),
@@ -65,7 +65,6 @@ class Mouselog{
             pageLoadTime: pageLoadTime,
             events: []
         };
-        this.uploadIdx += 1;
         return trace;
     }
     _onVisibilityChange() {
@@ -141,6 +140,8 @@ class Mouselog{
     _fetchConfigFromServer() {
         // Upload an empty trace to fetch config from server
         let trace = this._newTrace();
+        trace.uploadIdx = this.uploadIdx;
+        this.uploadIdx += 1;
         return this.uploader.upload(trace, JSON.stringify(trace)); // This is a promise
     }
 
@@ -150,6 +151,8 @@ class Mouselog{
         this.eventsList = [];
         let dataBlocks = this._binarySplitBigDataBlock(trace); // An array of data blocks
         dataBlocks.forEach( dataBlock => {
+            dataBlock.uploadIdx = this.uploadIdx;
+            this.uploadIdx += 1;
             let encodedData = JSON.stringify(dataBlock);
             this.uploader.upload(dataBlock, encodedData); // This is a promise
         });
