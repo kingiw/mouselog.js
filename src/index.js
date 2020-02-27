@@ -38,7 +38,7 @@ function getButton(btn) {
     }
 }
 
-class Mouselog{
+class Mouselog {
     constructor() {
         this.impressionId = uuid();
         this.config = new Config();
@@ -276,4 +276,4 @@ class Mouselog{
     }
 }
 
-export { Mouselog };
+export default Mouselog;
