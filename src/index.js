@@ -140,7 +140,7 @@ class Mouselog{
     _fetchConfigFromServer() {
         // Upload an empty trace to fetch config from server
         let trace = this._newTrace();
-        trace.uploadIdx = this.uploadIdx;
+        trace.idx = this.uploadIdx;
         this.uploadIdx += 1;
         return this.uploader.upload(trace, JSON.stringify(trace)); // This is a promise
     }
@@ -151,7 +151,7 @@ class Mouselog{
         this.eventsList = [];
         let dataBlocks = this._binarySplitBigDataBlock(trace); // An array of data blocks
         dataBlocks.forEach( dataBlock => {
-            dataBlock.uploadIdx = this.uploadIdx;
+            dataBlock.idx = this.uploadIdx;
             this.uploadIdx += 1;
             let encodedData = JSON.stringify(dataBlock);
             this.uploader.upload(dataBlock, encodedData); // This is a promise
