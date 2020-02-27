@@ -225,7 +225,7 @@ class Mouselog {
              }).catch(err => {
                  debug.write(err);
              });
-            window.onbeforeunload = () => {
+            window.onunload = () => {
                 if (this.eventsList.length != 0) {
                     this._uploadTrace();
                 }
