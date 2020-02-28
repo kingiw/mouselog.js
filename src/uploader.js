@@ -103,16 +103,20 @@ class Uploader {
             this.config.absoluteUrl,
             `?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}`
         );
+        // https://github.com/w3c/beacon/pull/27
+        // Set keepalive: true for guarantee the request will be sent when the page is unloaded.
         if (this.config.enableGet) {
             return fetch(`${url}&data=${encodedData}`, {
                 method: "GET", 
-                credentials: "include"
+                credentials: "include",
+                keepalive: true
             });
         } else {
             return fetch(url, {
                 method: "POST",
                 credentials: "include",
-                body: encodedData
+                body: encodedData,
+                keepalive: true
             });
         }
     }
