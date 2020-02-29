@@ -3,7 +3,7 @@ const path = require("path");
 
 module.exports = {
     mode: "production",
-    entry: ["isomorphic-fetch", "../src/index.js"],
+    entry: ["isomorphic-fetch", "../src/webpack_entry.js"],
     output: {
         filename: "mouselog.min.js",
         path: path.resolve(__dirname, "../build"),
