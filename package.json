@@ -1,6 +1,6 @@
 {
   "name": "mouselog",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "The mouse tracking agent for Mouselog.",
   "main": "./src/index.js",
   "homepage": "https://github.com/microsoft/mouselog.js",

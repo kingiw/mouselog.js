@@ -9,11 +9,11 @@ let targetEvents = [
     "mousemove",
     "mousedown",
     "mouseup",
-    "mouseclick",
+    "click",
     "dblclick",
     "contextmenu",
     "wheel",
-    "torchstart",
+    "touchstart",
     "touchmove",
     "touchend"
 ];
@@ -86,7 +86,8 @@ class Mouselog {
         let x = parseInt(evt.pageX);
         let y = parseInt(evt.pageY);
 
-        if (x === undefined) {
+        // x and y is NaN
+        if (x == NaN || x == undefined) {
             // evt.changedTouches[0].pageX/Y is floats
             x = parseInt(evt.changedTouches[0].pageX);
             y = parseInt(evt.changedTouches[0].pageY);
