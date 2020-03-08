@@ -9,7 +9,7 @@ let targetEvents = [
     "mousemove",
     "mousedown",
     "mouseup",
-    "mouseclick",
+    "click",
     "dblclick",
     "contextmenu",
     "wheel",
