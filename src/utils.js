@@ -23,3 +23,7 @@ export function byteLength(str) {
     }
     return s;
 }
+
+export function getGlobalUserId() {
+    return window.mouselogUserId ? window.mouselogUserId : "";
+}

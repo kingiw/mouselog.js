@@ -3,7 +3,7 @@ import Uploader from './uploader';
 import Config from './config';
 import dcopy from 'deep-copy';
 import * as debug from './debugger';
-import { parseInt, maxNumber, byteLength } from './utils';
+import { parseInt, maxNumber, byteLength, getGlobalUserId } from './utils';
 
 let targetEvents = [
     "mousemove",
@@ -207,7 +207,7 @@ class Mouselog {
     _init(config) {
         this._clearBuffer();
         this.uploadIdx = 0;
-        this.uploader = new Uploader(this.impressionId, this.config);
+        this.uploader = new Uploader(this.config);
         this.uploader.setImpressionId(this.impressionId);
         if (this.config.build(config)) {
              // Async: Upload an empty data to fetch config from server
@@ -257,6 +257,7 @@ class Mouselog {
             debug.write(`Website ID: ${this.config.websiteId}`);
             debug.write(`Impression ID: ${this.impressionId}`);
             debug.write(`User-Agent: ${navigator.userAgent}`);
+            debug.write(`User ID: ${getGlobalUserId()}`);
             debug.write(`Page load time: ${pageLoadTime}`);
         } else {
             debug.write(res.msg);
