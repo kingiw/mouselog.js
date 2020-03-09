@@ -1,5 +1,6 @@
 import urljoin from 'url-join';
 import * as debug from './debugger';
+import { getGlobalUserId }   from './utils';
 
 let StatusEnum = {
     WAITING: 0,
@@ -8,8 +9,7 @@ let StatusEnum = {
 };
 
 class Uploader {
-    constructor(impressionId, config) {
-        this.impressionId = impressionId;
+    constructor(config) {
         this.config = config;
         this.resendQueue = [];
     }
@@ -101,7 +101,7 @@ class Uploader {
     _upload(encodedData) {
         let url = urljoin(
             this.config.absoluteUrl,
-            `?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}`
+            `?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}&userId=${getGlobalUserId()}`
         );
         // https://github.com/w3c/beacon/pull/27
         // Set keepalive: true for guarantee the request will be sent when the page is unloaded.

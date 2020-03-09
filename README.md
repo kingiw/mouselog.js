@@ -71,8 +71,16 @@ You can also deactivate Mouselog by calling `agent.stop()`.
 
 
 # Configuration
-The default configuration:
 
+## Username
+
+You can set username by assigning the username to `window.mouselogUserId`.
+```js
+window.mouselogUserId = "Username"；
+```
+Mouselog agent will automatically load it when uploading the data to the server.
+
+## Other parameters
 ```js
 {
     // Type: string
