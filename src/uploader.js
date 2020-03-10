@@ -53,7 +53,7 @@ class Uploader {
                 resolve({status: 0});
             }).catch(err => {
                 debug.write(`Pkg ${data.idx} failed, wait for resending. Error message: ${err.message}`);
-                this._appendFailedData(data);
+                this._appendFailedData(data, encodedData);
                 resolve({
                     status: -1, 
                     msg: `Fail to upload data bunch #${data.idx}, ${err.message}`
@@ -86,7 +86,7 @@ class Uploader {
                 debug.write(`Resending Pkg ${obj.data.idx}`);
                 if (obj.status == StatusEnum.WAITING) {
                     obj.status = StatusEnum.SENDING;
-                    this.upload(obj.data).then( result => {
+                    this.upload(obj.data, obj.encodedData).then( result => {
                         if (result) { // Successfully resend the data
                             obj.status = StatusEnum.SUCCESS;
                         } else {
@@ -121,10 +121,11 @@ class Uploader {
         }
     }
 
-    _appendFailedData(data) {
+    _appendFailedData(data, encodedData) {
         this.resendQueue.push({
             status: StatusEnum.WAITING,
-            data: data
+            data: data,
+            encodedData: encodedData
         });
     }
     
