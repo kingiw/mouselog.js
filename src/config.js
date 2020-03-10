@@ -29,7 +29,7 @@ class Config {
         this.frequency = 50;
 
         // Maximum size of a single package
-        this.sizeLimit = 4096;
+        this.sizeLimit = 65535;
 
         // Type: bool
         // Use GET method to upload data? (stringified data will be embedded in URI)
@@ -37,7 +37,7 @@ class Config {
 
         // Type: number
         // Time interval for resending the failed trace data
-        this.resendInterval = 3000;
+        this.resendInterval = 20000;
 
         // Type: HTML DOM Element
         // Capture the events occur in `this.scope`
