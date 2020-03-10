@@ -12,7 +12,7 @@ Embed Mouselog in your HTML files:
 ```html
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mouselog@latest/build/mouselog.js"></script>
 <script>
-    var agent = new mouselog.init();
+    var agent = mouselog.init();
     agent.run({
         uploadEndpoint: "Your_Server_Url",
         websiteId: "Your_Website_Id",
@@ -26,7 +26,7 @@ You can also include mouselog dynamically in Javascript:
     var script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/npm/mouselog@latest/build/mouselog.js";
     script.onload = function() {
-        var agent = new mouselog.init();
+        var agent = mouselog.init();
         agent.run({
             uploadEndpoint: "Your_Server_Url",
             websiteId: "Your_Website_Id",
@@ -111,7 +111,7 @@ Mouselog agent will automatically load it when uploading the data to the server.
     frequency: 50,
 
     // Maximum size of a single package
-    sizeLimit = 4096,
+    sizeLimit = 65535,
 
     // Type: bool
     // Use GET method to upload data? (stringified data will be embedded in URI)
