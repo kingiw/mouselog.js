@@ -45,6 +45,7 @@ class Mouselog {
         this.mouselogLoadTime = new Date();
         this.uploader = new Uploader();
         this.eventsList = [];
+        this.lastEvent;
         this.eventsCount = 0;
         this.uploadInterval; // For "periodic" upload mode
         this.uploadTimeout; // For "mixed" upload mode
@@ -105,7 +106,17 @@ class Mouselog {
             tmpEvt.deltaX = evt.deltaX;
             tmpEvt.deltaY = evt.deltaY;
         }
+
+        // Evaluate if `tmpEvt` is the same as the previous events
+        // If true, drop `tmpEvt`
+        if (this.lastEvent && this.lastEvent.timestamp == tmpEvt.timestamp 
+            && this.lastEvent.x == tmpEvt.x && this.lastEvent.y == tmpEvt.y
+            && this.lastEvent.type == tmpEvt.type && this.lastEvent.button == tmpEvt.button) {
+            return;
+        }
+        
         this.eventsList.push(tmpEvt);
+        this.lastEvent = tmpEvt;
         this.eventsCount += 1;
 
         if ( this.config.uploadMode == "event-triggered" && this.eventsList.length % this.config.frequency == 0 ) {
