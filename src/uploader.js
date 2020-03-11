@@ -9,7 +9,9 @@ let StatusEnum = {
 };
 
 class Uploader {
-    constructor(config) {
+    constructor(impId, sessId, config) {
+        this.impressionId = impId;
+        this.sessionId = sessId;
         this.config = config;
         this.resendQueue = [];
     }
@@ -62,10 +64,6 @@ class Uploader {
         });
     }
 
-    setImpressionId(impId) {
-        this.impressionId = impId;
-    }
-
     setConfig(config) {
         this.stop();
         this.config = config;
@@ -101,7 +99,7 @@ class Uploader {
     _upload(encodedData) {
         let url = urljoin(
             this.config.absoluteUrl,
-            `?websiteId=${this.config.websiteId}&impressionId=${this.impressionId}&userId=${getGlobalUserId()}`
+            `?websiteId=${this.config.websiteId}&sessionId=${this.sessionId}&impressionId=${this.impressionId}&userId=${getGlobalUserId()}`
         );
         // https://github.com/w3c/beacon/pull/27
         // Set keepalive: true for guarantee the request will be sent when the page is unloaded.

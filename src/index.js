@@ -2,6 +2,7 @@ import uuid from "uuid/v4";
 import Uploader from './uploader';
 import Config from './config';
 import dcopy from 'deep-copy';
+import Cookies from 'js-cookie';
 import * as debug from './debugger';
 import { parseInt, maxNumber, byteLength, getGlobalUserId } from './utils';
 
@@ -38,9 +39,19 @@ function getButton(btn) {
     }
 }
 
+function getSessionId() {
+    let sessionId = Cookies.get("mouselogSessionId");
+    if (!sessionId) {
+        sessionId = uuid();
+        Cookies.set("mouselogSessionId", sessionId);
+    }
+    return sessionId;
+}
+
 class Mouselog {
     constructor() {
         this.impressionId = uuid();
+        this.sessionId = getSessionId(); // Session ID == "" => localStorage is disabled
         this.config = new Config();
         this.mouselogLoadTime = new Date();
         this.uploader = new Uploader();
@@ -61,6 +72,7 @@ class Mouselog {
             idx: 0,
             url: window.location.hostname ? window.location.hostname : "localhost",
             path: window.location.pathname,
+            sessionId: this.sessionId,
             width: maxNumber(document.body.scrollWidth, window.innerWidth),
             height: maxNumber(document.body.scrollHeight, window.innerHeight),
             pageLoadTime: pageLoadTime,
@@ -68,6 +80,7 @@ class Mouselog {
         };
         return trace;
     }
+
     _onVisibilityChange() {
         if (window.document[hiddenProperty]) {
             // the page is not activated
@@ -77,6 +90,7 @@ class Mouselog {
             this._resume();
         }
     }
+
     _mouseHandler(evt) {
         // PC's Chrome on Mobile mode can still receive "contextmenu" event with zero X, Y, so we ignore these events.
         if (evt.type === 'contextmenu' && evt.pageX === 0 && evt.pageY === 0) {
@@ -218,8 +232,7 @@ class Mouselog {
     _init(config) {
         this._clearBuffer();
         this.uploadIdx = 0;
-        this.uploader = new Uploader(this.config);
-        this.uploader.setImpressionId(this.impressionId);
+        this.uploader = new Uploader(this.impressionId, this.sessionId, this.config);
         if (this.config.build(config)) {
              // Async: Upload an empty data to fetch config from server
              this._fetchConfigFromServer().then( result => {
@@ -266,6 +279,7 @@ class Mouselog {
             this.uploader.start(this.impressionId);
             debug.write("Mouselog agent is activated!");
             debug.write(`Website ID: ${this.config.websiteId}`);
+            debug.write(`Session ID: ${this.sessionId}`);
             debug.write(`Impression ID: ${this.impressionId}`);
             debug.write(`User-Agent: ${navigator.userAgent}`);
             debug.write(`User ID: ${getGlobalUserId()}`);
