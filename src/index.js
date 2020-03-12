@@ -124,10 +124,13 @@ class Mouselog {
 
         // Evaluate if `tmpEvt` is the same as the previous events
         // If true, drop `tmpEvt`
-        if (this.lastEvent && this.lastEvent.timestamp == tmpEvt.timestamp
-            && this.lastEvent.x == tmpEvt.x && this.lastEvent.y == tmpEvt.y
-            && this.lastEvent.type == tmpEvt.type && this.lastEvent.button == tmpEvt.button) {
-            return;
+        if (this.lastEvent && this.lastEvent.x == tmpEvt.x && this.lastEvent.y == tmpEvt.y) {
+            if (this.lastEvent.type == "mousemove" && tmpEvt.type == "mousemove") {
+                return;
+            }
+            if (this.lastEvent.type == tmpEvt.type && this.lastEvent.button == tmpEvt.button && this.lastEvent.timestamp == tmpEvt.timestamp) {
+                return;
+            }
         }
 
         this.eventsList.push(tmpEvt);
