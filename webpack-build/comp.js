@@ -1,5 +1,9 @@
 // Configuration of generating compressed `mouselog.min.js`
 const path = require("path");
+var webpack = require('webpack');
+var PACKAGE = require('../package.json');
+var now = new Date();
+var banner = `Mouselog Agent - v${PACKAGE.version} | ${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()} | MIT`;
 
 module.exports = {
     mode: "production",
@@ -38,5 +42,8 @@ module.exports = {
                 }
             }
         ]
-    }
+    },
+    plugins: [
+        new webpack.BannerPlugin(banner)
+    ]
 }
