@@ -76,6 +76,7 @@ class Mouselog {
             width: maxNumber(document.body.scrollWidth, window.innerWidth),
             height: maxNumber(document.body.scrollHeight, window.innerHeight),
             pageLoadTime: pageLoadTime,
+            referrer: document.referrer,
             events: []
         };
         return trace;
@@ -108,7 +109,7 @@ class Mouselog {
             y = parseInt(evt.changedTouches[0].pageY);
         }
         let tmpEvt = {
-            id: this.eventsCount, 
+            id: this.eventsCount,
             timestamp: getRelativeTimestampInSeconds(),
             type: evt.type,
             x: x,
@@ -123,12 +124,12 @@ class Mouselog {
 
         // Evaluate if `tmpEvt` is the same as the previous events
         // If true, drop `tmpEvt`
-        if (this.lastEvent && this.lastEvent.timestamp == tmpEvt.timestamp 
+        if (this.lastEvent && this.lastEvent.timestamp == tmpEvt.timestamp
             && this.lastEvent.x == tmpEvt.x && this.lastEvent.y == tmpEvt.y
             && this.lastEvent.type == tmpEvt.type && this.lastEvent.button == tmpEvt.button) {
             return;
         }
-        
+
         this.eventsList.push(tmpEvt);
         this.lastEvent = tmpEvt;
         this.eventsCount += 1;
@@ -156,7 +157,7 @@ class Mouselog {
             this._binarySplitBigDataBlock(newDataBlock).forEach(block => {
                 res.push(block);
             });
-            
+
         } else {
             res.push(dataBlock);
         }
