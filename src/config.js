@@ -43,6 +43,10 @@ class Config {
         // Capture the events occur in `this.scope`
         this.scope = window.document;
 
+        // "base64" or empty string
+        // Use a encoder before uploading the data
+        this.encoder = ""
+
         // These parameters are required for runing a Mouselog agent
         this._requiredParams = [
             "uploadEndpoint",

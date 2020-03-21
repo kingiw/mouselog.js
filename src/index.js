@@ -147,24 +147,32 @@ class Mouselog {
         }
     }
 
+    _encodeData(data) {
+        let encodedData = JSON.stringify(data);
+        if (this.config.encoder.toLowerCase() == "base64") {
+            encodedData = btoa(encodedData);
+        }
+        return encodedData;
+    }
+
     _binarySplitBigDataBlock(dataBlock) {
-        let encodedData = JSON.stringify(dataBlock);
-        let res = [];
+        let encodedData = this._encodeData(dataBlock);
+        let rawAndEncodedDataArray = [];
         if ( byteLength(encodedData) >= this.config.sizeLimit ) {
             let newDataBlock = dcopy(dataBlock);
             dataBlock.events.splice(dataBlock.events.length / 2);
             newDataBlock.events.splice(0, newDataBlock.events.length / 2);
-            this._binarySplitBigDataBlock(dataBlock).forEach(block => {
-                res.push(block);
+            this._binarySplitBigDataBlock(dataBlock).forEach(rawAndEncodedData => {
+                rawAndEncodedDataArray.push(rawAndEncodedData);
             });
-            this._binarySplitBigDataBlock(newDataBlock).forEach(block => {
-                res.push(block);
+            this._binarySplitBigDataBlock(newDataBlock).forEach(rawAndEncodedData => {
+                rawAndEncodedDataArray.push(rawAndEncodedData);
             });
 
         } else {
-            res.push(dataBlock);
+            rawAndEncodedDataArray.push([dataBlock, encodedData]);
         }
-        return res;
+        return rawAndEncodedDataArray;
     }
 
     _fetchConfigFromServer() {
@@ -172,19 +180,18 @@ class Mouselog {
         let trace = this._newTrace();
         trace.idx = this.uploadIdx;
         this.uploadIdx += 1;
-        return this.uploader.upload(trace, JSON.stringify(trace)); // This is a promise
+        return this.uploader.upload(trace, this._encodeData(trace)); // This is a promise
     }
 
     _uploadTrace() {
         let trace = this._newTrace();
         trace.events = this.eventsList;
         this.eventsList = [];
-        let dataBlocks = this._binarySplitBigDataBlock(trace); // An array of data blocks
-        dataBlocks.forEach( dataBlock => {
-            dataBlock.idx = this.uploadIdx;
+        let dataList = this._binarySplitBigDataBlock(trace); // An array of data blocks
+        dataList.forEach( rawAndEncodedData => {
+            rawAndEncodedData[0].idx = this.uploadIdx;
             this.uploadIdx += 1;
-            let encodedData = JSON.stringify(dataBlock);
-            this.uploader.upload(dataBlock, encodedData); // This is a promise
+            this.uploader.upload(...rawAndEncodedData); // This is a promise
         });
     }
 
