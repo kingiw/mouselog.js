@@ -125,6 +125,10 @@ Mouselog agent will automatically load it when uploading the data to the server.
     // If `serverConfig`, Mouselog will fetch config from backend server during initialization
     serverConfig = true;
 
+    // Type: Boolean
+    // Mouselog will not generate session ID to track user cross-tabs behaviors if `disabledSession` == true
+    disabledSession = false;
+
     // Type: bool
     // Use GET method to upload data? (stringified data will be embedded in URI)
     enableGet: false,

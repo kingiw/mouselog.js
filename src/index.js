@@ -48,7 +48,8 @@ function getSessionId() {
 class Mouselog {
     constructor() {
         this.impressionId = uuid();
-        this.sessionId = getSessionId(); // Session ID == "" => localStorage is disabled
+        // Session ID == "" => localStorage is disabled / Mouselog Session is disabled
+        this.sessionId = this.config.disabledSession ? "" : getSessionId(); 
         this.config = new Config();
         this.mouselogLoadTime = new Date();
         this.uploader = new Uploader();
