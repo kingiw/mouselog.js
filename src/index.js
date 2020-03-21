@@ -4,7 +4,7 @@ import Config from './config';
 import dcopy from 'deep-copy';
 import Cookies from 'js-cookie';
 import * as debug from './debugger';
-import { parseInt, maxNumber, byteLength, getGlobalUserId } from './utils';
+import { parseInt, maxNumber, byteLength, getGlobalUserId, equalArray } from './utils';
 
 let targetEvents = [
     "mousemove",
@@ -16,8 +16,10 @@ let targetEvents = [
     "wheel",
     "touchstart",
     "touchmove",
-    "touchend"
+    "touchend",
+    "resize"
 ];
+
 let pageLoadTime = new Date();
 
 let hiddenProperty = 'hidden' in document ? 'hidden' :
@@ -46,7 +48,8 @@ function getSessionId() {
 class Mouselog {
     constructor() {
         this.impressionId = uuid();
-        this.sessionId = getSessionId(); // Session ID == "" => localStorage is disabled
+        // Session ID == "" => localStorage is disabled / Mouselog Session is disabled
+        this.sessionId = this.config.disabledSession ? "" : getSessionId(); 
         this.config = new Config();
         this.mouselogLoadTime = new Date();
         this.uploader = new Uploader();
@@ -55,7 +58,7 @@ class Mouselog {
         this.packetCount = 0;
 
         this.eventsList = [];
-        this.lastEvent;
+        this.lastEvtInfo;
         this.eventsCount = 0;
         this.uploadInterval; // For "periodic" upload mode
         this.uploadTimeout; // For "mixed" upload mode
@@ -71,7 +74,6 @@ class Mouselog {
             packetId: 0,
             url: window.location.hostname ? window.location.hostname : "localhost",
             path: window.location.pathname,
-            sessionId: this.sessionId,
             width: maxNumber(document.body.scrollWidth, window.innerWidth),
             height: maxNumber(document.body.scrollHeight, window.innerHeight),
             pageLoadTime: pageLoadTime,
@@ -97,53 +99,66 @@ class Mouselog {
         if (evt.type === 'contextmenu' && evt.pageX === 0 && evt.pageY === 0) {
             return;
         }
-
-        // In IE, evt.pageX/Y is float
-        let x = parseInt(evt.pageX);
-        let y = parseInt(evt.pageY);
-
-        // x and y is NaN
-        if (x == NaN || x == undefined) {
-            // evt.changedTouches[0].pageX/Y is floats
-            x = parseInt(evt.changedTouches[0].pageX);
-            y = parseInt(evt.changedTouches[0].pageY);
+        // (id, event type, timestamp)
+        let evtInfo = [this.eventsCount, targetEvents.indexOf(evt.type), Math.floor(evt.timeStamp) / 1000];
+        switch (evt.type) {
+            case "mousemove": // (x,y)
+                let x = parseInt(evt.pageX);
+                let y = parseInt(evt.pageY);
+                evtInfo.push(x, y);
+                break;
+            case "touchmove":
+            case "touchstart":
+            case "touchend":    // (x,y)
+                x = parseInt(evt.changedTouches[0].pageX);
+                y = parseInt(evt.changedTouches[0].pageY);
+                evtInfo.push(x, y);
+                break;
+            case "wheel": // (x,y,deltaX,deltaY)
+                x = parseInt(evt.pageX);
+                y = parseInt(evt.pageY);
+                let deltaX = parseInt(evt.deltaX);
+                let deltaY = parseInt(evt.deltaY);
+                evtInfo.push(x, y, deltaX, deltaY);
+                break;
+            case "mousemove":
+            case "mouseup":
+            case "mousedown":
+            case "click":
+            case "dblclick":
+            case "contextmenu": // (x,y,button)
+                x = parseInt(evt.pageX);
+                y = parseInt(evt.pageY);
+                let btn = getButton(evt.buttono);
+                evtInfo.push(x, y, btn);
+                break;
+            case "resize": // (width,height)
+                let width = evt.target.innerWidth;
+                let height = evt.target.innerHeight;
+                evtInfo.push(width, height)
+                break;
         }
-        let tmpEvt = {
-            id: this.eventsCount, 
-            timestamp: Math.floor(evt.timeStamp) / 1000,
-            type: evt.type,
-            x: x,
-            y: y,
-            button: getButton(evt.button)
-        };
 
-        if (evt.type == "wheel") {
-            tmpEvt.deltaX = evt.deltaX;
-            tmpEvt.deltaY = evt.deltaY;
+        // Remove Redundant events
+        if (this.lastEvtInfo && equalArray(this.lastEvtInfo, evtInfo)) {
+            return;
+        }
+        // Remove two consecutive Mousemove/Touchmove events with the same x and y
+        if (this.lastEvtInfo && ["mousemove", "touchmove"].includes(targetEvents[evtInfo[1]]) && this.lastEvtInfo[1] == evtInfo[1] && equalArray(this.lastEvtInfo.slice(3), evtInfo.slice(3))) {
+            return;
         }
 
-        // Evaluate if `tmpEvt` is the same as the previous events
-        // If true, drop `tmpEvt`
-        if (this.lastEvent && this.lastEvent.x == tmpEvt.x && this.lastEvent.y == tmpEvt.y) {
-            if (this.lastEvent.type == "mousemove" && tmpEvt.type == "mousemove") {
-                return;
-            }
-            if (this.lastEvent.type == tmpEvt.type && this.lastEvent.button == tmpEvt.button && this.lastEvent.timestamp == tmpEvt.timestamp) {
-                return;
-            }
-        }
-
-        this.eventsList.push(tmpEvt);
-        this.lastEvent = tmpEvt;
+        this.eventsList.push(evtInfo);
+        this.lastEvtInfo = evtInfo;
         this.eventsCount += 1;
 
         if ( this.config.uploadMode == "event-triggered" && this.eventsList.length % this.config.frequency == 0 ) {
-            this._uploadTrace();
+            this._uploadData();
         }
 
         if ( this.config.uploadMode == "mixed" && this.eventsList.length % this.config.frequency == 0) {
             this._periodUploadTimeout();
-            this._uploadTrace();
+            this._uploadData();
         }
     }
 
@@ -157,22 +172,22 @@ class Mouselog {
 
     _binarySplitBigDataBlock(dataBlock) {
         let encodedData = this._encodeData(dataBlock);
-        let rawAndEncodedDataArray = [];
+        let res = [];
         if ( byteLength(encodedData) >= this.config.sizeLimit ) {
             let newDataBlock = dcopy(dataBlock);
             dataBlock.events.splice(dataBlock.events.length / 2);
             newDataBlock.events.splice(0, newDataBlock.events.length / 2);
-            this._binarySplitBigDataBlock(dataBlock).forEach(rawAndEncodedData => {
-                rawAndEncodedDataArray.push(rawAndEncodedData);
+            this._binarySplitBigDataBlock(dataBlock).forEach(data => {
+                res.push(data);
             });
-            this._binarySplitBigDataBlock(newDataBlock).forEach(rawAndEncodedData => {
-                rawAndEncodedDataArray.push(rawAndEncodedData);
+            this._binarySplitBigDataBlock(newDataBlock).forEach(data => {
+                res.push(data);
             });
 
         } else {
-            rawAndEncodedDataArray.push([dataBlock, encodedData]);
+            res.push(dataBlock);
         }
-        return rawAndEncodedDataArray;
+        return res;
     }
 
     _fetchConfigFromServer() {
@@ -184,27 +199,29 @@ class Mouselog {
         return this.uploader.upload(trace, this._encodeData(trace)); // This is a promise
     }
 
-    _uploadTrace() {
+    _uploadData() {
         if (this.config.uploadTimes && this.batchCount >= this.config.uploadTimes + this.config.serverConfig) {
             return; 
             // TODO: This is only a stopgap method, a better method is to stop mouselog entirely.
         }
-        let trace = this._newDataBatch();
-        trace.events = this.eventsList;
+        let data = this._newDataBatch();
+        data.events = this.eventsList;
         this.eventsList = [];
-        let dataList = this._binarySplitBigDataBlock(trace); // An array of data blocks
-        dataList.forEach( rawAndEncodedData => {
-            rawAndEncodedData[0].packetId = this.packetCount;
+
+        let dataList = this._binarySplitBigDataBlock(data); // An array of data blocks
+        dataList.forEach(data => {
+            data.packetId = this.packetCount;
             this.packetCount += 1;
-            this.uploader.upload(...rawAndEncodedData); // This is a promise
-        });
+            let encodedData = this._encodeData(data);
+            this.uploader.upload(data, encodedData);
+        })
     }
 
     _periodUploadTimeout() {
         clearTimeout(this.uploadTimeout);
         this.uploadTimeout = setTimeout(() => {
             if (this.eventsList.length > 0) {
-                this._uploadTrace();
+                this._uploadData();
             }
         }, this.config.uploadPeriod);
     }
@@ -213,7 +230,7 @@ class Mouselog {
         clearInterval(this.uploadInterval);
         this.uploadInterval = setInterval(() => {
             if (this.eventsList.length > 0) {
-                this._uploadTrace();
+                this._uploadData();
             }
         }, this.config.uploadPeriod);
     }
@@ -269,7 +286,7 @@ class Mouselog {
             }
             window.onunload = () => {
                 if (this.eventsList.length != 0) {
-                    this._uploadTrace();
+                    this._uploadData();
                 }
             };
             return {status: 0};

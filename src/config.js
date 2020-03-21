@@ -58,6 +58,10 @@ class Config {
         // If `serverConfig`, Mouselog will fetch config from backend server during initialization
         this.serverConfig = true;
 
+        // Type: Boolean
+        // Mouselog will not generate session ID to track user cross-tabs behaviors if `disabledSession` == true
+        this.disabledSession = false;
+
         // These parameters are required for runing a Mouselog agent
         this._requiredParams = [
             "uploadEndpoint",
