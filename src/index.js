@@ -26,11 +26,6 @@ let hiddenProperty = 'hidden' in document ? 'hidden' :
     null;
 let visibilityChangeEvent = hiddenProperty ? hiddenProperty.replace(/hidden/i, 'visibilitychange') : null;
 
-function getRelativeTimestampInSeconds() {
-    let diff = new Date() - pageLoadTime;
-    return Math.floor(diff) / 1000;
-}
-
 function getButton(btn) {
     if (btn === '2') {
         return 'Right';
@@ -109,8 +104,8 @@ class Mouselog {
             y = parseInt(evt.changedTouches[0].pageY);
         }
         let tmpEvt = {
-            id: this.eventsCount,
-            timestamp: getRelativeTimestampInSeconds(),
+            id: this.eventsCount, 
+            timestamp: Math.floor(evt.timeStamp) / 1000,
             type: evt.type,
             x: x,
             y: y,
