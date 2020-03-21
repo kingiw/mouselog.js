@@ -50,6 +50,10 @@ class Mouselog {
         this.config = new Config();
         this.mouselogLoadTime = new Date();
         this.uploader = new Uploader();
+
+        this.batchCount = 0; 
+        this.packetCount = 0;
+
         this.eventsList = [];
         this.lastEvent;
         this.eventsCount = 0;
@@ -61,10 +65,10 @@ class Mouselog {
         this.eventsList = [];
     }
 
-    _newTrace() {
+    _newDataBatch() {
         let trace = {
-            id: '0',
-            idx: 0,
+            batchId: this.batchCount,
+            packetId: 0,
             url: window.location.hostname ? window.location.hostname : "localhost",
             path: window.location.pathname,
             sessionId: this.sessionId,
@@ -74,6 +78,7 @@ class Mouselog {
             referrer: document.referrer,
             events: []
         };
+        this.batchCount += 1;
         return trace;
     }
 
@@ -172,20 +177,25 @@ class Mouselog {
 
     _fetchConfigFromServer() {
         // Upload an empty trace to fetch config from server
-        let trace = this._newTrace();
-        trace.idx = this.uploadIdx;
-        this.uploadIdx += 1;
+        let trace = this._newDataBatch();
+
+        trace.packetId = this.packetCount;
+        this.packetCount += 1;
         return this.uploader.upload(trace, this._encodeData(trace)); // This is a promise
     }
 
     _uploadTrace() {
-        let trace = this._newTrace();
+        if (this.config.uploadTimes && this.batchCount >= this.config.uploadTimes + 1) {
+            return; 
+            // TODO: This is only a stopgap method, a better method should be stopping mouselog totally.
+        }
+        let trace = this._newDataBatch();
         trace.events = this.eventsList;
         this.eventsList = [];
         let dataList = this._binarySplitBigDataBlock(trace); // An array of data blocks
         dataList.forEach( rawAndEncodedData => {
-            rawAndEncodedData[0].idx = this.uploadIdx;
-            this.uploadIdx += 1;
+            rawAndEncodedData[0].packetId = this.packetCount;
+            this.packetCount += 1;
             this.uploader.upload(...rawAndEncodedData); // This is a promise
         });
     }
@@ -237,7 +247,6 @@ class Mouselog {
 
     _init(config) {
         this._clearBuffer();
-        this.uploadIdx = 0;
         this.uploader = new Uploader(this.impressionId, this.sessionId, this.config);
         if (this.config.build(config)) {
              // Async: Upload an empty data to fetch config from server
