@@ -110,8 +110,20 @@ Mouselog agent will automatically load it when uploading the data to the server.
     // The website interaction data will be uploaded when every `frequency` events are captured.
     frequency: 50,
 
+    // Type: number | null
+    // Mouselog will stop uploading data after uploading `uploadTimes` batch data.
+    uploadTimes = null
+
     // Maximum size of a single package
     sizeLimit = 65535,
+
+    // Content: "base64" or an empty string
+    // Use a encoder before uploading the data
+    encoder = "";
+
+    // Type: Boolean
+    // If `serverConfig`, Mouselog will fetch config from backend server during initialization
+    serverConfig = true;
 
     // Type: bool
     // Use GET method to upload data? (stringified data will be embedded in URI)

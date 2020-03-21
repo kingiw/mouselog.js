@@ -50,9 +50,13 @@ class Config {
         // Capture the events occur in `this.scope`
         this.scope = window.document;
 
-        // "base64" or empty string
+        // Content: "base64" or an empty string
         // Use a encoder before uploading the data
-        this.encoder = ""
+        this.encoder = "";
+
+        // Type: Boolean
+        // If `serverConfig`, Mouselog will fetch config from backend server during initialization
+        this.serverConfig = true;
 
         // These parameters are required for runing a Mouselog agent
         this._requiredParams = [

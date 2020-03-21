@@ -185,9 +185,9 @@ class Mouselog {
     }
 
     _uploadTrace() {
-        if (this.config.uploadTimes && this.batchCount >= this.config.uploadTimes + 1) {
+        if (this.config.uploadTimes && this.batchCount >= this.config.uploadTimes + this.config.serverConfig) {
             return; 
-            // TODO: This is only a stopgap method, a better method should be stopping mouselog totally.
+            // TODO: This is only a stopgap method, a better method is to stop mouselog entirely.
         }
         let trace = this._newDataBatch();
         trace.events = this.eventsList;
@@ -249,22 +249,24 @@ class Mouselog {
         this._clearBuffer();
         this.uploader = new Uploader(this.impressionId, this.sessionId, this.config);
         if (this.config.build(config)) {
-             // Async: Upload an empty data to fetch config from server
-             this._fetchConfigFromServer().then( result => {
-                 if (result.status == 1) {
-                     if (this.config.update(result.config)) {
-                         this._resetCollector();
-                         this.uploader.setConfig(this.config);
-                         debug.write("Successfully update config from backend.");
-                     } else {
-                        throw new Error(`Unable to update config with server config.`);
-                     }
-                 } else {
-                    throw new Error(`Fail to get config from server.`);
-                 }
-             }).catch(err => {
-                 debug.write(err);
-             });
+            if (this.config.serverConfig) {
+                // Async: Upload an empty data to fetch config from server
+                this._fetchConfigFromServer().then( result => {
+                    if (result.status == 1) {
+                        if (this.config.update(result.config)) {
+                            this._resetCollector();
+                            this.uploader.setConfig(this.config);
+                            debug.write("Successfully update config from backend.");
+                        } else {
+                           throw new Error(`Unable to update config with server config.`);
+                        }
+                    } else {
+                       throw new Error(`Fail to get config from server.`);
+                    }
+                }).catch(err => {
+                    debug.write(err);
+                });
+            }
             window.onunload = () => {
                 if (this.eventsList.length != 0) {
                     this._uploadTrace();
