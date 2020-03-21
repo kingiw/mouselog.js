@@ -26,11 +26,6 @@ let hiddenProperty = 'hidden' in document ? 'hidden' :
     null;
 let visibilityChangeEvent = hiddenProperty ? hiddenProperty.replace(/hidden/i, 'visibilitychange') : null;
 
-function getRelativeTimestampInSeconds() {
-    let diff = new Date() - pageLoadTime;
-    return Math.floor(diff) / 1000;
-}
-
 function getButton(btn) {
     if (btn === '2') {
         return 'Right';
@@ -55,6 +50,10 @@ class Mouselog {
         this.config = new Config();
         this.mouselogLoadTime = new Date();
         this.uploader = new Uploader();
+
+        this.batchCount = 0; 
+        this.packetCount = 0;
+
         this.eventsList = [];
         this.lastEvent;
         this.eventsCount = 0;
@@ -66,10 +65,10 @@ class Mouselog {
         this.eventsList = [];
     }
 
-    _newTrace() {
+    _newDataBatch() {
         let trace = {
-            id: '0',
-            idx: 0,
+            batchId: this.batchCount,
+            packetId: 0,
             url: window.location.hostname ? window.location.hostname : "localhost",
             path: window.location.pathname,
             sessionId: this.sessionId,
@@ -79,6 +78,7 @@ class Mouselog {
             referrer: document.referrer,
             events: []
         };
+        this.batchCount += 1;
         return trace;
     }
 
@@ -109,8 +109,8 @@ class Mouselog {
             y = parseInt(evt.changedTouches[0].pageY);
         }
         let tmpEvt = {
-            id: this.eventsCount,
-            timestamp: getRelativeTimestampInSeconds(),
+            id: this.eventsCount, 
+            timestamp: Math.floor(evt.timeStamp) / 1000,
             type: evt.type,
             x: x,
             y: y,
@@ -124,10 +124,13 @@ class Mouselog {
 
         // Evaluate if `tmpEvt` is the same as the previous events
         // If true, drop `tmpEvt`
-        if (this.lastEvent && this.lastEvent.timestamp == tmpEvt.timestamp
-            && this.lastEvent.x == tmpEvt.x && this.lastEvent.y == tmpEvt.y
-            && this.lastEvent.type == tmpEvt.type && this.lastEvent.button == tmpEvt.button) {
-            return;
+        if (this.lastEvent && this.lastEvent.x == tmpEvt.x && this.lastEvent.y == tmpEvt.y) {
+            if (this.lastEvent.type == "mousemove" && tmpEvt.type == "mousemove") {
+                return;
+            }
+            if (this.lastEvent.type == tmpEvt.type && this.lastEvent.button == tmpEvt.button && this.lastEvent.timestamp == tmpEvt.timestamp) {
+                return;
+            }
         }
 
         this.eventsList.push(tmpEvt);
@@ -144,44 +147,56 @@ class Mouselog {
         }
     }
 
+    _encodeData(data) {
+        let encodedData = JSON.stringify(data);
+        if (this.config.encoder.toLowerCase() == "base64") {
+            encodedData = btoa(encodedData);
+        }
+        return encodedData;
+    }
+
     _binarySplitBigDataBlock(dataBlock) {
-        let encodedData = JSON.stringify(dataBlock);
-        let res = [];
+        let encodedData = this._encodeData(dataBlock);
+        let rawAndEncodedDataArray = [];
         if ( byteLength(encodedData) >= this.config.sizeLimit ) {
             let newDataBlock = dcopy(dataBlock);
             dataBlock.events.splice(dataBlock.events.length / 2);
             newDataBlock.events.splice(0, newDataBlock.events.length / 2);
-            this._binarySplitBigDataBlock(dataBlock).forEach(block => {
-                res.push(block);
+            this._binarySplitBigDataBlock(dataBlock).forEach(rawAndEncodedData => {
+                rawAndEncodedDataArray.push(rawAndEncodedData);
             });
-            this._binarySplitBigDataBlock(newDataBlock).forEach(block => {
-                res.push(block);
+            this._binarySplitBigDataBlock(newDataBlock).forEach(rawAndEncodedData => {
+                rawAndEncodedDataArray.push(rawAndEncodedData);
             });
 
         } else {
-            res.push(dataBlock);
+            rawAndEncodedDataArray.push([dataBlock, encodedData]);
         }
-        return res;
+        return rawAndEncodedDataArray;
     }
 
     _fetchConfigFromServer() {
         // Upload an empty trace to fetch config from server
-        let trace = this._newTrace();
-        trace.idx = this.uploadIdx;
-        this.uploadIdx += 1;
-        return this.uploader.upload(trace, JSON.stringify(trace)); // This is a promise
+        let trace = this._newDataBatch();
+
+        trace.packetId = this.packetCount;
+        this.packetCount += 1;
+        return this.uploader.upload(trace, this._encodeData(trace)); // This is a promise
     }
 
     _uploadTrace() {
-        let trace = this._newTrace();
+        if (this.config.uploadTimes && this.batchCount >= this.config.uploadTimes + this.config.serverConfig) {
+            return; 
+            // TODO: This is only a stopgap method, a better method is to stop mouselog entirely.
+        }
+        let trace = this._newDataBatch();
         trace.events = this.eventsList;
         this.eventsList = [];
-        let dataBlocks = this._binarySplitBigDataBlock(trace); // An array of data blocks
-        dataBlocks.forEach( dataBlock => {
-            dataBlock.idx = this.uploadIdx;
-            this.uploadIdx += 1;
-            let encodedData = JSON.stringify(dataBlock);
-            this.uploader.upload(dataBlock, encodedData); // This is a promise
+        let dataList = this._binarySplitBigDataBlock(trace); // An array of data blocks
+        dataList.forEach( rawAndEncodedData => {
+            rawAndEncodedData[0].packetId = this.packetCount;
+            this.packetCount += 1;
+            this.uploader.upload(...rawAndEncodedData); // This is a promise
         });
     }
 
@@ -232,25 +247,26 @@ class Mouselog {
 
     _init(config) {
         this._clearBuffer();
-        this.uploadIdx = 0;
         this.uploader = new Uploader(this.impressionId, this.sessionId, this.config);
         if (this.config.build(config)) {
-             // Async: Upload an empty data to fetch config from server
-             this._fetchConfigFromServer().then( result => {
-                 if (result.status == 1) {
-                     if (this.config.update(result.config)) {
-                         this._resetCollector();
-                         this.uploader.setConfig(this.config);
-                         debug.write("Successfully update config from backend.");
-                     } else {
-                        throw new Error(`Unable to update config with server config.`);
-                     }
-                 } else {
-                    throw new Error(`Fail to get config from server.`);
-                 }
-             }).catch(err => {
-                 debug.write(err);
-             });
+            if (this.config.serverConfig) {
+                // Async: Upload an empty data to fetch config from server
+                this._fetchConfigFromServer().then( result => {
+                    if (result.status == 1) {
+                        if (this.config.update(result.config)) {
+                            this._resetCollector();
+                            this.uploader.setConfig(this.config);
+                            debug.write("Successfully update config from backend.");
+                        } else {
+                           throw new Error(`Unable to update config with server config.`);
+                        }
+                    } else {
+                       throw new Error(`Fail to get config from server.`);
+                    }
+                }).catch(err => {
+                    debug.write(err);
+                });
+            }
             window.onunload = () => {
                 if (this.eventsList.length != 0) {
                     this._uploadTrace();

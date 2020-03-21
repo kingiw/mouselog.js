@@ -31,7 +31,7 @@ class Uploader {
         // resolve({status:-1/0/1, ...}): uploading success/fail.
         // reject(ErrorMessage): Errors occur when updating the config.
         return new Promise( (resolve) => {
-            debug.write(`Uploading Pkg ${data.idx}, window size: ${data.width}*${data.height}, events count: ${data.events.length}`);
+            debug.write(`Uploading Pkg ${data.packetId}, window size: ${data.width}*${data.height}, events count: ${data.events.length}`);
             for (let i = 0; i < 3 && i < data.events.length; ++i)
                 debug.write(`    ${JSON.stringify(data.events[i])}`);
             this._upload(encodedData).then(res => {
@@ -41,7 +41,7 @@ class Uploader {
                     throw new Error("Response status code is not 200.");
                 }
             }).then(resObj => {
-                debug.write(`Pkg ${data.idx} response=${JSON.stringify(resObj)}`);
+                debug.write(`Pkg ${data.packetId} response=${JSON.stringify(resObj)}`);
                 if (resObj.status !== "ok") {
                     throw new Error("Response object status is not ok.");
                 }
@@ -54,11 +54,11 @@ class Uploader {
                 }
                 resolve({status: 0});
             }).catch(err => {
-                debug.write(`Pkg ${data.idx} failed, wait for resending. Error message: ${err.message}`);
+                debug.write(`Pkg ${data.packetId} failed, wait for resending. Error message: ${err.message}`);
                 this._appendFailedData(data, encodedData);
                 resolve({
                     status: -1, 
-                    msg: `Fail to upload data bunch #${data.idx}, ${err.message}`
+                    msg: `Fail to upload data bunch #${data.packetId}, ${err.message}`
                 });
             });
         });
@@ -81,7 +81,7 @@ class Uploader {
                 this.resendQueue.splice(i, 1);  // Remove it from resendQueue
             } else {
                 i += 1;
-                debug.write(`Resending Pkg ${obj.data.idx}`);
+                debug.write(`Resending Pkg ${obj.data.packetId}`);
                 if (obj.status == StatusEnum.WAITING) {
                     obj.status = StatusEnum.SENDING;
                     this.upload(obj.data, obj.encodedData).then( result => {

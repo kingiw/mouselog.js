@@ -15,7 +15,10 @@ class Config {
         // Endpoint type, "absolute" or "relative"
         this.endpointType = "absolute";
 
-        // Upload mode, "mixed", "periodic" or "event-triggered"
+        // An array "mixed", "periodic", "event-triggered"
+        // Periodic mode: Upload data in every given period
+        // Event-triggered mode: Upload data when a given number of events are collected
+        // Mixed mode: a mix of periodic and event-triggered mode
         this.uploadMode = "mixed";
 
         // Type: number
@@ -27,6 +30,10 @@ class Config {
         // If `uploadMode` == "event-triggered"
         // The website interaction data will be uploaded when every `frequency` events are captured.
         this.frequency = 50;
+
+        // Type: number | null
+        // Mouselog will stop uploading data after uploading `uploadTimes` batch data.
+        this.uploadTimes = null
 
         // Maximum size of a single package
         this.sizeLimit = 65535;
@@ -42,6 +49,14 @@ class Config {
         // Type: HTML DOM Element
         // Capture the events occur in `this.scope`
         this.scope = window.document;
+
+        // Content: "base64" or an empty string
+        // Use a encoder before uploading the data
+        this.encoder = "";
+
+        // Type: Boolean
+        // If `serverConfig`, Mouselog will fetch config from backend server during initialization
+        this.serverConfig = true;
 
         // These parameters are required for runing a Mouselog agent
         this._requiredParams = [
