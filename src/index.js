@@ -197,7 +197,7 @@ class Mouselog {
     }
 
     _uploadData() {
-        if (this.config.uploadTimes && this.batchCount >= this.config.uploadTimes + this.config.serverConfig) {
+        if (this.config.uploadTimes && this.batchCount >= this.config.uploadTimes + this.config.enableServerConfig) {
             return; 
             // TODO: This is only a stopgap method, a better method is to stop mouselog entirely.
         }
