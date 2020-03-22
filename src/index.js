@@ -217,7 +217,7 @@ class Mouselog {
     _periodUploadTimeout() {
         clearTimeout(this.uploadTimeout);
         this.uploadTimeout = setTimeout(() => {
-            if (this.eventsList.length > 0) {
+            if (this.config.enableSendEmpty || this.eventsList.length > 0) {
                 this._uploadData();
             }
         }, this.config.uploadPeriod);
@@ -226,7 +226,7 @@ class Mouselog {
     _periodUploadInterval() {
         clearInterval(this.uploadInterval);
         this.uploadInterval = setInterval(() => {
-            if (this.eventsList.length > 0) {
+            if (this.config.enableSendEmpty || this.eventsList.length > 0) {
                 this._uploadData();
             }
         }, this.config.uploadPeriod);

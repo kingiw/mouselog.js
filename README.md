@@ -129,6 +129,10 @@ Mouselog agent will automatically load it when uploading the data to the server.
     // Mouselog will generate session ID to track user cross-tabs behaviors if `enableSession` == true
     enableSession = true;
 
+    // Type: Boolean
+    // Allow mouselog to send data without any events
+    enableSendEmpty = false;
+
     // Type: bool
     // Use GET method to upload data? (stringified data will be embedded in URI)
     enableGet: false,

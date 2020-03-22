@@ -62,6 +62,10 @@ class Config {
         // Mouselog will generate session ID to track user cross-tabs behaviors if `enableSession` == true
         this.enableSession = true;
 
+        // Type: Boolean
+        // Allow mouselog to send data without any events
+        this.enableSendEmpty = false;
+
         // These parameters are required for runing a Mouselog agent
         this._requiredParams = [
             "uploadEndpoint",
