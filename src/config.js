@@ -106,7 +106,7 @@ class Config {
         if (this.endpointType == "relative") {
             this.absoluteUrl = urljoin(window.location.origin, this.uploadEndpoint);
         } else if (this.endpointType == "absolute") {
-            this.absoluteUrl = urljoin(this.uploadEndpoint, "/api/upload-trace");
+            this.absoluteUrl = this.uploadEndpoint;
         } else {
             throw new Error('`endpointType` can only be "absolute" or "relative"');
         }
