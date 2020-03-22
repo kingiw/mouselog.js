@@ -47,10 +47,8 @@ function getSessionId() {
 
 class Mouselog {
     constructor() {
-        this.impressionId = uuid();
-        // Session ID == "" => localStorage is disabled / Mouselog Session is disabled
-        this.sessionId = this.config.disabledSession ? "" : getSessionId(); 
         this.config = new Config();
+        this.impressionId = uuid();
         this.mouselogLoadTime = new Date();
         this.uploader = new Uploader();
 
@@ -121,7 +119,6 @@ class Mouselog {
                 let deltaY = parseInt(evt.deltaY);
                 evtInfo.push(x, y, deltaX, deltaY);
                 break;
-            case "mousemove":
             case "mouseup":
             case "mousedown":
             case "click":
@@ -196,7 +193,7 @@ class Mouselog {
 
         trace.packetId = this.packetCount;
         this.packetCount += 1;
-        return this.uploader.upload(trace, this._encodeData(trace)); // This is a promise
+        return this.uploader.upload(trace, this._encodeData(trace), true); // This is a promise
     }
 
     _uploadData() {
@@ -264,15 +261,19 @@ class Mouselog {
 
     _init(config) {
         this._clearBuffer();
-        this.uploader = new Uploader(this.impressionId, this.sessionId, this.config);
         if (this.config.build(config)) {
-            if (this.config.serverConfig) {
+            // Session ID == "" => localStorage is disabled / Mouselog Session is not enabled
+            this.sessionId = this.config.enableSession ? getSessionId() : "";
+            this.uploader = new Uploader(this.impressionId, this.sessionId, this.config);
+            if (this.config.enableServerConfig) {
                 // Async: Upload an empty data to fetch config from server
                 this._fetchConfigFromServer().then( result => {
                     if (result.status == 1) {
                         if (this.config.update(result.config)) {
                             this._resetCollector();
                             this.uploader.setConfig(this.config);
+                            this.sessionId = this.config.enableSession ? getSessionId() : "";
+                            this.uploader.sessionId = this.sessionId;
                             debug.write("Successfully update config from backend.");
                         } else {
                            throw new Error(`Unable to update config with server config.`);
