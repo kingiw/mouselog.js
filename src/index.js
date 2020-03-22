@@ -119,7 +119,6 @@ class Mouselog {
                 let deltaY = parseInt(evt.deltaY);
                 evtInfo.push(x, y, deltaX, deltaY);
                 break;
-            case "mousemove":
             case "mouseup":
             case "mousedown":
             case "click":
@@ -194,7 +193,7 @@ class Mouselog {
 
         trace.packetId = this.packetCount;
         this.packetCount += 1;
-        return this.uploader.upload(trace, this._encodeData(trace)); // This is a promise
+        return this.uploader.upload(trace, this._encodeData(trace), true); // This is a promise
     }
 
     _uploadData() {

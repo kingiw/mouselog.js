@@ -27,14 +27,18 @@ class Uploader {
         // TODO?: Send all the remaining data in this.buf
     }
 
-    upload(data, encodedData) {
+    upload(data, encodedData, queryConfig = false) {
         // resolve({status:-1/0/1, ...}): uploading success/fail.
         // reject(ErrorMessage): Errors occur when updating the config.
         return new Promise( (resolve) => {
             debug.write(`Uploading Pkg ${data.packetId}, window size: ${data.width}*${data.height}, events count: ${data.events.length}`);
             for (let i = 0; i < 3 && i < data.events.length; ++i)
                 debug.write(`    ${JSON.stringify(data.events[i])}`);
-            this._upload(encodedData).then(res => {
+            let url = urljoin(
+                this.config.absoluteUrl,
+                `?websiteId=${this.config.websiteId}&sessionId=${this.sessionId}&impressionId=${this.impressionId}&userId=${getGlobalUserId()}${queryConfig ? "&queryConfig=1" : ""}`
+            );
+            this._upload(encodedData, url).then(res => {
                 if (res.status == 200) {
                     return res.json();
                 } else {
@@ -96,11 +100,7 @@ class Uploader {
         }
     }
 
-    _upload(encodedData) {
-        let url = urljoin(
-            this.config.absoluteUrl,
-            `?websiteId=${this.config.websiteId}&sessionId=${this.sessionId}&impressionId=${this.impressionId}&userId=${getGlobalUserId()}`
-        );
+    _upload(encodedData, url) {
         // https://github.com/w3c/beacon/pull/27
         // Set keepalive: true for guarantee the request will be sent when the page is unloaded.
         if (this.config.enableGet) {
