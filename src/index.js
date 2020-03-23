@@ -2,7 +2,6 @@ import uuid from "uuid/v4";
 import Uploader from './uploader';
 import Config from './config';
 import dcopy from 'deep-copy';
-import Cookies from 'js-cookie';
 import * as debug from './debugger';
 import { parseInt, maxNumber, byteLength, getGlobalUserId, equalArray } from './utils';
 
@@ -22,6 +21,18 @@ let targetEvents = [
 
 let pageLoadTime = new Date();
 
+let isLocalStorageAvailable = (() => {
+    let testString = uuid();
+    try {
+        localStorage.setItem(testString, testString);
+        localStorage.removeItem(testString);
+        return true;
+    } catch(e) {
+        return false;
+    }
+})();
+
+
 let hiddenProperty = 'hidden' in document ? 'hidden' :
     'webkitHidden' in document ? 'webkitHidden' :
     'mozHidden' in document ? 'mozHidden' :
@@ -37,10 +48,13 @@ function getButton(btn) {
 }
 
 function getSessionId() {
-    let sessionId = Cookies.get("mouselogSessionId");
-    if (!sessionId) {
+    if (!isLocalStorageAvailable) {
+        return "";
+    } 
+    let sessionId = localStorage.getItem('mouselogSessionID');
+    if (sessionId == null) {
         sessionId = uuid();
-        Cookies.set("mouselogSessionId", sessionId);
+        localStorage.setItem('mouselogSessionID', sessionId);
     }
     return sessionId;
 }
