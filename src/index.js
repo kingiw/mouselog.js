@@ -2,6 +2,7 @@ import uuid from "uuid/v4";
 import Uploader from './uploader';
 import Config from './config';
 import dcopy from 'deep-copy';
+import * as base64 from 'base-64';
 import * as debug from './debugger';
 import { parseInt, maxNumber, byteLength, getGlobalUserId, equalArray } from './utils';
 
@@ -176,7 +177,7 @@ class Mouselog {
     _encodeData(data) {
         let encodedData = JSON.stringify(data);
         if (this.config.encoder.toLowerCase() == "base64") {
-            encodedData = btoa(encodedData);
+            encodedData = base64.encode(encodedData);
         }
         return encodedData;
     }
