@@ -39,9 +39,6 @@ You can also include mouselog dynamically in Javascript:
 })();
 ```
 
-###
-To achieve high compatability for IE9, you should refer to [promise-polyfill](https://github.com/taylorhakes/promise-polyfill) before refering Mouselog agent.
-
 ## Build Manually
 You can also bundle Mouselog.js manually via
 ```
