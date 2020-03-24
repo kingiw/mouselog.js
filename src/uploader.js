@@ -1,4 +1,5 @@
 import urljoin from 'url-join';
+import Promise from 'promise-polyfill';
 import * as debug from './debugger';
 import { getGlobalUserId }   from './utils';
 
