@@ -155,7 +155,7 @@ class Mouselog {
             return;
         }
         // Remove two consecutive Mousemove/Touchmove events with the same x and y
-        if (this.lastEvtInfo && ["mousemove", "touchmove"].includes(targetEvents[evtInfo[1]]) && this.lastEvtInfo[1] == evtInfo[1] && equalArray(this.lastEvtInfo.slice(3), evtInfo.slice(3))) {
+        if (this.lastEvtInfo && (targetEvents[evtInfo[1]] == "mousemove" || targetEvents[evtInfo[1]] == "touchmove") && this.lastEvtInfo[1] == evtInfo[1] && equalArray(this.lastEvtInfo.slice(3), evtInfo.slice(3))) {
             return;
         }
 

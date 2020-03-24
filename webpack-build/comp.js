@@ -1,6 +1,7 @@
 // Configuration of generating compressed `mouselog.min.js`
 const path = require("path");
 var webpack = require('webpack');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 var PACKAGE = require('../package.json');
 var now = new Date();
 var banner = `Mouselog Agent - v${PACKAGE.version} | ${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()} | MIT`;
@@ -15,7 +16,14 @@ module.exports = {
         library: "mouselog"
     },
     optimization: {
-        minimize: true
+        minimizer: [new UglifyJsPlugin({
+            parallel: true,
+            uglifyOptions: {
+                compress: {
+                    drop_console: true
+                }
+            }
+        })],
     },
     target: "web",
     module: {
