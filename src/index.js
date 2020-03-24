@@ -1,3 +1,4 @@
+import "es6-promise/auto";
 import uuid from "uuid/v4";
 import Uploader from './uploader';
 import Config from './config';
@@ -39,6 +40,12 @@ let hiddenProperty = 'hidden' in document ? 'hidden' :
     'mozHidden' in document ? 'mozHidden' :
     null;
 let visibilityChangeEvent = hiddenProperty ? hiddenProperty.replace(/hidden/i, 'visibilitychange') : null;
+
+function isIEBrowser(upperBound = 9) {
+    let ua = navigator.userAgent.toLowerCase();
+    let v = ua.match(/msie ([\d]+)/);
+    return (v && parseInt(v[1]) <= upperBound);
+}
 
 function getButton(btn) {
     if (btn === '2') {
@@ -320,6 +327,10 @@ class Mouselog {
     }
 
     run(config) {
+        if (isIEBrowser(9)) {
+            debug.write("IE Browser version <= 9. Stop.");
+            return;
+        }
         let res = this._init(config);
         if (res.status == 0) {
             if (visibilityChangeEvent) {
