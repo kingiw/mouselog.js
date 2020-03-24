@@ -1,3 +1,4 @@
+import "es6-promise/auto";
 import uuid from "uuid/v4";
 import Uploader from './uploader';
 import Config from './config';
