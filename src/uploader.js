@@ -106,13 +106,11 @@ class Uploader {
         if (this.config.enableGet) {
             return fetch(`${url}&data=${encodedData}`, {
                 method: "GET", 
-                credentials: "include",
                 keepalive: true
             });
         } else {
             return fetch(url, {
                 method: "POST",
-                credentials: "include",
                 body: encodedData,
                 keepalive: true
             });
