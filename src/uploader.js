@@ -38,8 +38,11 @@ class Uploader {
                 this.config.absoluteUrl,
                 `?websiteId=${this.config.websiteId}&sessionId=${this.sessionId}&impressionId=${this.impressionId}&userId=${getGlobalUserId()}${queryConfig ? "&queryConfig=1" : ""}`
             );
+            let responseStatus;
             this._upload(encodedData, url).then(res => {
-                if (res.status == 200) {
+                responseStatus = res.status;
+                debug.write(`Pkg ${data.packetId}, status code: ${responseStatus}, content type: ${res.headers.get("Content-Type")}`);
+                if (responseStatus == 200) {
                     return res.json();
                 } else {
                     throw new Error("Response status code is not 200.");
@@ -58,12 +61,21 @@ class Uploader {
                 }
                 resolve({status: 0});
             }).catch(err => {
-                debug.write(`Pkg ${data.packetId} failed, wait for resending. Error message: ${err.message}`);
-                this._appendFailedData(data, encodedData);
-                resolve({
-                    status: -1, 
-                    msg: `Fail to upload data bunch #${data.packetId}, ${err.message}`
-                });
+                // If status code is 2xx, packet will not be resent
+                if (responseStatus && responseStatus.toString()[0] === '2') {
+                    debug.write(`Pkg ${data.packetId} was successfully sent, but no expected response. Error message: ${err.message}`);
+                    resolve({
+                        status: -1,
+                        msg: `Pkg ${data.packetId} get no expected response, ${err.message}`
+                    })
+                } else {
+                    debug.write(`Pkg ${data.packetId} failed, wait for resending. Error message: ${err.message}`);
+                    this._appendFailedData(data, encodedData);
+                    resolve({
+                        status: -1, 
+                        msg: `Fail to upload data bunch #${data.packetId}, ${err.message}`
+                    });
+                }
             });
         });
     }
