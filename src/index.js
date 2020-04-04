@@ -55,18 +55,6 @@ function getButton(btn) {
     }
 }
 
-function getSessionId() {
-    if (!isLocalStorageAvailable) {
-        return "";
-    } 
-    let sessionId = localStorage.getItem('mouselogSessionID');
-    if (sessionId == null) {
-        sessionId = uuid();
-        localStorage.setItem('mouselogSessionID', sessionId);
-    }
-    return sessionId;
-}
-
 class Mouselog {
     constructor() {
         this.config = new Config();
@@ -96,6 +84,31 @@ class Mouselog {
                 debug.write("Fail to initialize Impression ID with a `impIdVariable`");
                 this.impressionId = uuid();
             }
+        }
+    }
+
+    _initSessionId() {
+        // Session ID == "" => localStorage is disabled / Mouselog Session is not enabled
+        if (!isLocalStorageAvailable || !this.config.enableSession) {
+            return "";
+        }
+        if (!(this.config.sessionIdVariable === undefined || this.config.sessionIdVariable === null)) {
+            try {
+                this.sessionId = eval(this.config.sessionIdVariable);
+                if (this.sessionId == undefined || this.sessionId == null) {
+                    debug.write(`Warning: the value of \`${this.config.sessionIdVariable}\` is undefined or null.`);
+                    this.sessionId = "";
+                }
+                return;
+            } catch(e) {
+                debug.write("Fail to initialize Impression ID with a `sessionIdVariable`")
+            }
+        } 
+        // If this.config.sessionIdVariable doesn't exist or eval(this.config.sessionIdVariable) failed
+        this.sessionId = localStorage.getItem('mouselogSessionID');
+        if (this.sessionId === null || this.sessionId === undefiend) {
+            this.sessionId = uuid();
+            localStorage.setItem('mouselogSessionID', this.sessionId);
         }
     }
 
@@ -300,9 +313,7 @@ class Mouselog {
         this._clearBuffer();
         if (this.config.build(config)) {
             this._initImpressionId();
-
-            // Session ID == "" => localStorage is disabled / Mouselog Session is not enabled
-            this.sessionId = this.config.enableSession ? getSessionId() : "";
+            this._initSessionId();
             this.uploader = new Uploader(this.impressionId, this.sessionId, this.config);
             if (this.config.enableServerConfig) {
                 // Async: Upload an empty data to fetch config from server

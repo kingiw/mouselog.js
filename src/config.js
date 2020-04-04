@@ -72,6 +72,11 @@ class Config {
         // Warning: Please don't set the same impression ID variable in two different mouselog instances.
         this.impIdVariable = null;
 
+        // Type: string
+        // A global predefined variable for setting the session ID.
+        // When initializing the session ID, mouselog will try to call `eval(this.sessionIdVariable)`.
+        this.sessionIdVariable = null;
+
         // These parameters are required for runing a Mouselog agent
         this._requiredParams = [
             "uploadEndpoint",
@@ -81,6 +86,7 @@ class Config {
         this._ignoredParams = [
             "scope",
             "impIdVariable",
+            "sessionIdVariable"
         ];
     }
 
