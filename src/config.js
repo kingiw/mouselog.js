@@ -66,6 +66,12 @@ class Config {
         // Allow mouselog to send data without any events
         this.enableSendEmpty = false;
 
+        // Type: string
+        // A global predefined variable for setting the impression ID.
+        // When initializing the impression ID, mouselog will try to call `eval(this.impIdVariable)`.
+        // Warning: Please don't set the same impression ID variable in two different mouselog instances.
+        this.impIdVariable = null;
+
         // These parameters are required for runing a Mouselog agent
         this._requiredParams = [
             "uploadEndpoint",
@@ -74,6 +80,7 @@ class Config {
         // These parameters will be ignored when updating config
         this._ignoredParams = [
             "scope",
+            "impIdVariable",
         ];
     }
 

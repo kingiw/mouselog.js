@@ -70,9 +70,7 @@ function getSessionId() {
 class Mouselog {
     constructor() {
         this.config = new Config();
-        this.impressionId = uuid();
         this.mouselogLoadTime = new Date();
-        this.uploader = new Uploader();
 
         this.batchCount = 0; 
         this.packetCount = 0;
@@ -82,6 +80,23 @@ class Mouselog {
         this.eventsCount = 0;
         this.uploadInterval; // For "periodic" upload mode
         this.uploadTimeout; // For "mixed" upload mode
+    }
+
+    _initImpressionId() {
+        if (this.config.impIdVariable === undefined || this.config.impIdVariable === null) {
+            this.impressionId = uuid();
+        } else {
+            try {
+                this.impressionId = eval(this.config.impIdVariable);
+                if (this.impressionId === null || this.impressionId === undefined) {
+                    debug.write(`Global varialbe impIdVariable: ${this.config.impIdVariable} is undefined or null. Use a randomly generated ID instead.`);
+                    this.impressionId = uuid();
+                }
+            } catch(e) {
+                debug.write("Fail to initialize Impression ID with a `impIdVariable`");
+                this.impressionId = uuid();
+            }
+        }
     }
 
     _clearBuffer() {
@@ -284,6 +299,8 @@ class Mouselog {
     _init(config) {
         this._clearBuffer();
         if (this.config.build(config)) {
+            this._initImpressionId();
+
             // Session ID == "" => localStorage is disabled / Mouselog Session is not enabled
             this.sessionId = this.config.enableSession ? getSessionId() : "";
             this.uploader = new Uploader(this.impressionId, this.sessionId, this.config);
