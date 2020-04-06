@@ -33,9 +33,9 @@ You can also include mouselog dynamically in Javascript:
             endpointType: "absolute"
         });
     }
-    var t = document.getElementsByTagName("script");
-    var s = t.length > 0 ? t[0].parentNode : document.body;
-    s.appendChild(script, s);
+    document.addEventListener('DOMContentLoaded', function () {
+      document.body.appendChild(script);
+    });
 })();
 ```
 
