@@ -104,7 +104,7 @@ class Mouselog {
                 return;
             } catch(e) {
                 debug.write("Fail to initialize Impression ID with a `sessionIdVariable`");
-                this.sessionId = `Err_fail_to_get_${this.config.impIdVariable}`;
+                this.sessionId = `Err_fail_to_get_${this.config.sessionIdVariable}`;
                 return;
             }
         } 
