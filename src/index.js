@@ -77,12 +77,12 @@ class Mouselog {
             try {
                 this.impressionId = eval(this.config.impIdVariable);
                 if (this.impressionId === null || this.impressionId === undefined) {
-                    debug.write(`Global varialbe impIdVariable: ${this.config.impIdVariable} is undefined or null. Use a randomly generated ID instead.`);
-                    this.impressionId = uuid();
+                    debug.write(`Global varialbe impIdVariable: ${this.config.impIdVariable} is ${this.impressionId}.`);
+                    this.impressionId = `Err_${this.config.impIdVariable}_is_${this.impressionId}`;
                 }
             } catch(e) {
                 debug.write("Fail to initialize Impression ID with a `impIdVariable`");
-                this.impressionId = uuid();
+                this.impressionId = `Err_fail_to_get_${this.config.impIdVariable}`;
             }
         }
     }
@@ -90,23 +90,26 @@ class Mouselog {
     _initSessionId() {
         // Session ID == "" => localStorage is disabled / Mouselog Session is not enabled
         if (!isLocalStorageAvailable || !this.config.enableSession) {
-            return "";
+            this.sessionId = "";
+            return;
         }
         if (!(this.config.sessionIdVariable === undefined || this.config.sessionIdVariable === null)) {
             try {
                 this.sessionId = eval(this.config.sessionIdVariable);
                 if (this.sessionId == undefined || this.sessionId == null) {
                     debug.write(`Warning: the value of \`${this.config.sessionIdVariable}\` is undefined or null.`);
-                    this.sessionId = "";
+                    // this.sessionId = "";
+                    this.sessionId = `Err_${this.config.sessionIdVariable}_is_${this.sessionId}`;
                 }
                 return;
             } catch(e) {
-                debug.write("Fail to initialize Impression ID with a `sessionIdVariable`")
+                debug.write("Fail to initialize Impression ID with a `sessionIdVariable`");
+                this.sessionId = `Err_fail_to_get_${this.config.impIdVariable}`;
+                return;
             }
         } 
-        // If this.config.sessionIdVariable doesn't exist or eval(this.config.sessionIdVariable) failed
         this.sessionId = localStorage.getItem('mouselogSessionID');
-        if (this.sessionId === null || this.sessionId === undefiend) {
+        if (this.sessionId === null || this.sessionId === undefined) {
             this.sessionId = uuid();
             localStorage.setItem('mouselogSessionID', this.sessionId);
         }
