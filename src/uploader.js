@@ -43,6 +43,7 @@ class Uploader {
                 responseStatus = res.status;
                 debug.write(`Pkg ${data.packetId}, status code: ${responseStatus}, content type: ${res.headers.get("Content-Type")}`);
                 if (responseStatus == 200) {
+                    // TODO: should not directly return res.json() here?
                     return res.json();
                 } else {
                     throw new Error("Response status code is not 200.");

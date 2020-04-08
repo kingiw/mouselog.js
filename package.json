@@ -1,13 +1,14 @@
 {
   "name": "mouselog",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "The mouse tracking agent for Mouselog.",
   "main": "./src/index.js",
   "homepage": "https://github.com/microsoft/mouselog.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rimraf -rf build/ && cd webpack-build && webpack && webpack --config comp.js && cd ..",
+    "build": "rimraf -rf build/ && cd webpack-build && webpack && webpack --config comp.js && webpack --config obfuscate.js && cd ..",
     "lint": "eslint src/**.js",
+    "obfuscate": "cd webpack-build && webpack --config obfuscate.js && cd ..",
     "prepublish": "npm run build"
   },
   "keywords": [],
@@ -38,6 +39,7 @@
     "rimraf": "^3.0.2",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10"
+    "webpack-cli": "^3.3.10",
+    "webpack-obfuscator": "^0.27.2"
   }
 }
