@@ -66,6 +66,10 @@ class Config {
         // Allow mouselog to send data without any events
         this.enableSendEmpty = false;
 
+        // Type: Boolean
+        // Not allow internal exceptions to be raised in browser's console
+        this.disableException = false;
+
         // Type: string
         // A global predefined variable for setting the impression ID.
         // When initializing the impression ID, mouselog will try to call `eval(this.impIdVariable)`.
@@ -82,11 +86,12 @@ class Config {
             "uploadEndpoint",
         ];
 
-        // These parameters will be ignored when updating config
+        // These parameters will be ignored when updating config from Mouselog server
         this._ignoredParams = [
             "scope",
             "impIdVariable",
-            "sessionIdVariable"
+            "sessionIdVariable",
+            "disableException"
         ];
     }
 

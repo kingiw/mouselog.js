@@ -134,6 +134,10 @@ Mouselog agent will automatically load it when uploading the data to the server.
     // Use GET method to upload data? (stringified data will be embedded in URI)
     enableGet: false,
 
+    // Type: Boolean
+    // Not allow internal exceptions to be raised in browser's console
+    this.disableException = false;
+
     // Type: string
     // A global predefined variable for setting the impression ID.
     // When initializing the impression ID, mouselog will try to call `eval(this.impIdVariable)`.
