@@ -333,7 +333,7 @@ class Mouselog {
                         if (this.config.update(result.config)) {
                             this._resetCollector();
                             this.uploader.setConfig(this.config);
-                            this.sessionId = this.config.enableSession ? getSessionId() : "";
+                            this._initSessionId();
                             this.uploader.sessionId = this.sessionId;
                             debug.write("Successfully update config from backend.");
                         } else {
