@@ -105,7 +105,7 @@ class Config {
             // Overwrite the default config
             Object.keys(config).forEach( key => {
                 // Overwriting Class private members / function method is not allowed
-                if (this[key] !== undefined && !key.startsWith("_") && typeof(this[key]) != "function") {
+                if (this[key] !== undefined && key[0] != "_" && typeof(this[key]) != "function") {
                     // Do not update some `ignored` parameter from server configuration
                     // PS: Dont use "array.includes" because it is not supported in IE
                     if (!(isUpdating && this._ignoredParams.indexOf(key) != -1)) {

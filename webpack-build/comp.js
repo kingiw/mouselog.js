@@ -44,8 +44,7 @@ module.exports = {
                                 "modules": "commonjs"
                             }*/]
                         ],
-                        // Polyfill for IE: starts-with-ends-with
-                        plugins: ["@babel/plugin-transform-runtime", "starts-with-ends-with"]
+                        plugins: ["@babel/plugin-transform-runtime"]
                     }
                 }
             }
