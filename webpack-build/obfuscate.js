@@ -43,7 +43,7 @@ module.exports = {
             compact: true,
             rotateUnicodeArray: true,
             identifierNamesGenerator: 'mangled',
-            selfDefending: true,
+            selfDefending: false,
             stringArrayEncoding: true,
             shuffleStringArray: true,
             stringArrayThreshold: 1,
