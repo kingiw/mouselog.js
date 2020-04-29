@@ -68,7 +68,7 @@ class Config {
 
         // Type: Boolean
         // Not allow internal exceptions to be raised in browser's console
-        this.disableException = false;
+        this.disableException = true;
 
         // Type: string
         // A global predefined variable for setting the impression ID.
