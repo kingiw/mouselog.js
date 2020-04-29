@@ -4,7 +4,7 @@ let outputElement;
 function activate(id) {
     debugMode = true;
     if (id) {
-        outputElement = window.document.getElementById(id);
+        outputElement = window.document.getElementById("mouselogDebugDiv");
         if (!outputElement) {
             console.log("Fail to find the output element.");
         }
